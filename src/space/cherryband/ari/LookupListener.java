@@ -1,4 +1,4 @@
-package itkach.aard2;
+package space.cherryband.ari;
 
 /**
  * Created by itkach on 9/24/14.

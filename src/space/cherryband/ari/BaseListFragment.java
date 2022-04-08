@@ -1,4 +1,4 @@
-package itkach.aard2;
+package space.cherryband.ari;
 
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;

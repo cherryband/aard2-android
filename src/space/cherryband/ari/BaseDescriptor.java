@@ -1,4 +1,4 @@
-package itkach.aard2;
+package space.cherryband.ari;
 
 public class BaseDescriptor {
     public String id;

@@ -1,4 +1,4 @@
-package itkach.aard2;
+package space.cherryband.ari;
 
 import android.app.Activity;
 import android.content.Context;

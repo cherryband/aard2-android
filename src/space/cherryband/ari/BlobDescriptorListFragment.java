@@ -1,4 +1,4 @@
-package itkach.aard2;
+package space.cherryband.ari;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -213,7 +213,7 @@ abstract class BlobDescriptorListFragment extends BaseListFragment {
         SharedPreferences p = this.prefs();
         SharedPreferences.Editor editor = p.edit();
         editor.putString(PREF_SORT_ORDER, order.name());
-        editor.commit();
+        editor.apply();
     }
 
     private void setAscending(MenuItem mi, boolean ascending) {
@@ -231,7 +231,7 @@ abstract class BlobDescriptorListFragment extends BaseListFragment {
         SharedPreferences p = this.prefs();
         SharedPreferences.Editor editor = p.edit();
         editor.putBoolean(PREF_SORT_DIRECTION, ascending);
-        editor.commit();
+        editor.apply();
     }
 
     @Override

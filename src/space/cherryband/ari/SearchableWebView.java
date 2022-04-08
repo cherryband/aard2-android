@@ -3,7 +3,7 @@
  * licensed under the Apache License, Version 2.0
  */
 
-package itkach.aard2;
+package space.cherryband.ari;
 
 import android.content.Context;
 import android.util.AttributeSet;

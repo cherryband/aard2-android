@@ -1,4 +1,4 @@
-package itkach.aard2;
+package space.cherryband.ari;
 
 /**
  * From http://www.marvinlabs.com/2010/10/29/custom-listview-ability-check-items/

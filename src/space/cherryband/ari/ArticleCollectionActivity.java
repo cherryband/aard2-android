@@ -1,4 +1,4 @@
-package itkach.aard2;
+package space.cherryband.ari;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -357,7 +357,7 @@ public class ArticleCollectionActivity extends FragmentActivity
     private void setFullScreenPref(boolean value) {
         SharedPreferences.Editor editor = prefs().edit();
         editor.putBoolean(PREF_FULLSCREEN, value);
-        editor.commit();
+        editor.apply();
     }
 
     private void fullScreen() {

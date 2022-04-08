@@ -1,4 +1,4 @@
-package itkach.aard2;
+package space.cherryband.ari;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
