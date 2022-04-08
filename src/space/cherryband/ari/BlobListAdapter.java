@@ -11,6 +11,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -22,15 +23,15 @@ public class BlobListAdapter extends BaseAdapter {
 
     private static final String TAG = BlobListAdapter.class.getSimpleName();
 
-    Handler             mainHandler;
-    List<Slob.Blob>     list;
+    final Handler mainHandler;
+    final List<Slob.Blob> list;
     Iterator<Slob.Blob> iter;
-    Iterator<Slob.Blob> emptyIter = new ArrayList<Slob.Blob>().iterator();
-    ExecutorService     executor;
+    final Iterator<Slob.Blob> emptyIter = Collections.emptyIterator();
+    final ExecutorService executor;
 
-    private final int   chunkSize;
-    private final int   loadMoreThreashold;
-    int                 MAX_SIZE   = 10000;
+    private final int chunkSize;
+    private final int loadMoreThreashold;
+    final int MAX_SIZE = 10000;
 
 
     public BlobListAdapter(Context context) {
@@ -40,7 +41,7 @@ public class BlobListAdapter extends BaseAdapter {
     public BlobListAdapter(Context context, int chunkSize, int loadMoreThreashold) {
         this.mainHandler = new Handler(context.getMainLooper());
         this.executor = Executors.newSingleThreadExecutor();
-        this.list = new ArrayList<Slob.Blob>(chunkSize);
+        this.list = new ArrayList<>(chunkSize);
         this.chunkSize = chunkSize;
         this.loadMoreThreashold = loadMoreThreashold;
     }
@@ -75,12 +76,7 @@ public class BlobListAdapter extends BaseAdapter {
         if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
             notifyDataSetChanged();
         } else {
-            mainHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    notifyDataSetChanged();
-                }
-            });
+            mainHandler.post(this::notifyDataSetChanged);
         }
         Log.d(TAG,
                 String.format("Loaded chunk of %d (adapter size %d) in %d ms",
@@ -91,18 +87,13 @@ public class BlobListAdapter extends BaseAdapter {
         if (!iter.hasNext()) {
             return;
         }
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                loadChunkSync();
-            }
-        });
+        executor.execute(this::loadChunkSync);
     }
 
     @Override
     public int getCount() {
         synchronized (list) {
-            return list == null ? 0 : list.size();
+            return list.size();
         }
     }
 
@@ -144,11 +135,11 @@ public class BlobListAdapter extends BaseAdapter {
             view = inflater.inflate(R.layout.blob_descriptor_list_item, parent, false);
         }
 
-        TextView titleView = (TextView)view.findViewById(R.id.blob_descriptor_key);
+        TextView titleView = view.findViewById(R.id.blob_descriptor_key);
         titleView.setText(item.key);
-        TextView sourceView = (TextView)view.findViewById(R.id.blob_descriptor_source);
+        TextView sourceView = view.findViewById(R.id.blob_descriptor_source);
         sourceView.setText(slob == null ? "???" : slob.getTags().get("label"));
-        TextView timestampView = (TextView)view.findViewById(R.id.blob_descriptor_timestamp);
+        TextView timestampView = view.findViewById(R.id.blob_descriptor_timestamp);
         timestampView.setText("");
         timestampView.setVisibility(View.GONE);
         return view;

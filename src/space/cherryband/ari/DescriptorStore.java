@@ -12,8 +12,8 @@ class DescriptorStore<T extends BaseDescriptor> {
 
     static final String TAG = DescriptorStore.class.getSimpleName();
 
-    private File         dir;
-    private ObjectMapper mapper;
+    private final File dir;
+    private final ObjectMapper mapper;
 
     DescriptorStore(ObjectMapper mapper, File dir) {
         this.dir = dir;

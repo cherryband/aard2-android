@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Aard 2</string>
+    <string name="app_name">Ari</string>
     <string name="subtitle_lookup">Opzoeken</string>
     <string name="subtitle_bookmark">Bladwijzers</string>
     <string name="subtitle_history">Geschiedenis</string>
@@ -32,7 +32,7 @@
     <string name="action_zoom_out">Uitzoomen</string>
     <string name="action_zoom_in">Inzoomen</string>
     <string name="action_zoom_reset">Zoom terugzetten</string>
-    <string name="action_select_style">Stijl...</string>
+    <string name="action_select_style">Stijl…</string>
     <string name="select_style">Stijl selecteren</string>
     <string name="default_style_title">Standaard</string>
     <string name="subtitle_settings">Instellingen</string>
@@ -51,8 +51,8 @@
     <string name="article_collection_selected_not_available">Het geselecteerde artikel is niet beschikbaar.</string>
     <string name="article_collection_nothing_to_lookup">Niks om op te zoeken</string>
     <string name="article_view_msg_not_found">Niet gevonden</string>
-    <string name="dictionaries_please_wait">Even geduld...</string>
-    <string name="dictionaries_scanning_device">Bezig met zoeken naar woordenboeken op apparaat...</string>
+    <string name="dictionaries_please_wait">Even geduld…</string>
+    <string name="dictionaries_scanning_device">Bezig met zoeken naar woordenboeken op apparaat…</string>
     <string name="dictionaries_confirm_forget">"%1$s" vergeten?</string>
     <string name="lookup_nothing_found">Niks gevonden</string>
     <string name="main_empty_bookmarks">Geen bladwijzers</string>

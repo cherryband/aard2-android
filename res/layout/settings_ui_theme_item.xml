@@ -14,7 +14,7 @@
             android:text="@string/setting_ui_theme"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginRight="14dip"
+            android:layout_marginEnd="14dip"
             android:textSize="20sp"/>
 
         <RadioGroup
@@ -22,8 +22,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/setting_name"
             android:layout_marginTop="10dip"
-            android:layout_marginLeft="2dip"
-            android:layout_marginRight="10dip"
+            android:layout_marginStart="2dip"
+            android:layout_marginEnd="10dip"
             >
             <RadioButton
                 android:layout_width="match_parent"
@@ -37,6 +37,13 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/setting_ui_theme_dark"
                 android:text="@string/setting_ui_theme_dark"
+                android:layout_marginBottom="5dip"
+                />
+            <RadioButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/setting_ui_theme_system"
+                android:text="@string/setting_ui_theme_system"
                 android:layout_marginBottom="5dip"
                 />
 

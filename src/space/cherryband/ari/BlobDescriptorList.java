@@ -26,28 +26,29 @@ final class BlobDescriptorList extends AbstractList<BlobDescriptor> {
 
     private final String TAG = getClass().getSimpleName();
 
-    static enum SortOrder {
-        TIME, NAME;
+    enum SortOrder {
+        TIME, NAME
     }
-    private Application                     app;
 
-    private DescriptorStore<BlobDescriptor> store;
-    private List<BlobDescriptor>            list;
-    private List<BlobDescriptor>            filteredList;
-    private String                          filter;
-    private SortOrder                       order;
-    private boolean                         ascending;
-    private final DataSetObservable         dataSetObservable;
-    private Comparator<BlobDescriptor>      nameComparatorAsc;
-    private Comparator<BlobDescriptor>      nameComparatorDesc;
-    private Comparator<BlobDescriptor>      timeComparatorAsc;
-    private Comparator<BlobDescriptor>      timeComparatorDesc;
-    private Comparator<BlobDescriptor>      comparator;
-    private Comparator<BlobDescriptor>      lastAccessComparator;
-    private Slob.KeyComparator              keyComparator;
-    private int                             maxSize;
-    private RuleBasedCollator               filterCollator;
-    private Handler                         handler;
+    private final Application app;
+
+    private final DescriptorStore<BlobDescriptor> store;
+    private final List<BlobDescriptor> list;
+    private final List<BlobDescriptor> filteredList;
+    private String filter;
+    private SortOrder order;
+    private boolean ascending;
+    private final DataSetObservable dataSetObservable;
+    private final Comparator<BlobDescriptor> nameComparatorAsc;
+    private final Comparator<BlobDescriptor> nameComparatorDesc;
+    private final Comparator<BlobDescriptor> timeComparatorAsc;
+    private final Comparator<BlobDescriptor> timeComparatorDesc;
+    private Comparator<BlobDescriptor> comparator;
+    private final Comparator<BlobDescriptor> lastAccessComparator;
+    private final Slob.KeyComparator keyComparator;
+    private final int maxSize;
+    private final RuleBasedCollator filterCollator;
+    private final Handler handler;
 
     BlobDescriptorList(Application app, DescriptorStore<BlobDescriptor> store) {
         this(app, store, 100);
@@ -57,40 +58,25 @@ final class BlobDescriptorList extends AbstractList<BlobDescriptor> {
         this.app = app;
         this.store = store;
         this.maxSize = maxSize;
-        this.list = new ArrayList<BlobDescriptor>();
-        this.filteredList = new ArrayList<BlobDescriptor>();
+        this.list = new ArrayList<>();
+        this.filteredList = new ArrayList<>();
         this.dataSetObservable = new DataSetObservable();
         this.filter = "";
         keyComparator = Slob.Strength.QUATERNARY.comparator;
 
-        nameComparatorAsc = new Comparator<BlobDescriptor>() {
-            @Override
-            public int compare(BlobDescriptor b1, BlobDescriptor b2) {
-            return keyComparator.compare(b1.key, b2.key);
-            }
-        };
+        nameComparatorAsc = (b1, b2) -> keyComparator.compare(b1.key, b2.key);
 
         nameComparatorDesc = Collections.reverseOrder(nameComparatorAsc);
 
-        timeComparatorAsc = new Comparator<BlobDescriptor>() {
-            @Override
-            public int compare(BlobDescriptor b1, BlobDescriptor b2) {
-            return Util.compare(b1.createdAt, b2.createdAt);
-            }
-        };
+        timeComparatorAsc = (b1, b2) -> Util.compare(b1.createdAt, b2.createdAt);
 
         timeComparatorDesc = Collections.reverseOrder(timeComparatorAsc);
 
-        lastAccessComparator = new Comparator<BlobDescriptor>() {
-            @Override
-            public int compare(BlobDescriptor b1, BlobDescriptor b2) {
-                return  Util.compare(b2.lastAccess, b1.lastAccess);
-            }
-        };
+        lastAccessComparator = (b1, b2) -> Util.compare(b2.lastAccess, b1.lastAccess);
 
         order = SortOrder.TIME;
         ascending = false;
-        setSort(order, ascending);
+        setSort(order, false);
 
         try {
             filterCollator = (RuleBasedCollator) Collator.getInstance(Locale.ROOT).clone();
@@ -118,8 +104,7 @@ final class BlobDescriptorList extends AbstractList<BlobDescriptor> {
         this.filteredList.clear();
         if (filter == null || filter.length() == 0) {
             this.filteredList.addAll(this.list);
-        }
-        else {
+        } else {
             for (BlobDescriptor bd : this.list) {
                 StringSearch stringSearch = new StringSearch(
                         filter, new StringCharacterIterator(bd.key), filterCollator);
@@ -164,14 +149,8 @@ final class BlobDescriptorList extends AbstractList<BlobDescriptor> {
     void updateLastAccess(final BlobDescriptor bd) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             doUpdateLastAccess(bd);
-        }
-        else {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    doUpdateLastAccess(bd);
-                }
-            });
+        } else {
+            handler.post(() -> doUpdateLastAccess(bd));
         }
     }
 
@@ -202,11 +181,10 @@ final class BlobDescriptorList extends AbstractList<BlobDescriptor> {
                     bd.slobId = slobId;
                     bd.blobId = blob.id;
                 }
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Log.w(TAG,
-                      String.format("Failed to resolve descriptor %s (%s) in %s (%s)",
-                              bd.blobId, bd.key, slob.getId(), slob.fileURI), ex);
+                        String.format("Failed to resolve descriptor %s (%s) in %s (%s)",
+                                bd.blobId, bd.key, slob.getId(), slob.fileURI), ex);
                 blob = null;
             }
         }
@@ -221,8 +199,7 @@ final class BlobDescriptorList extends AbstractList<BlobDescriptor> {
         Uri uri = Uri.parse(contentUrl);
         BlobDescriptor bd = BlobDescriptor.fromUri(uri);
         if (bd != null) {
-            String slobUri = app.getSlobURI(bd.slobId);
-            bd.slobUri = slobUri;
+            bd.slobUri = app.getSlobURI(bd.slobId);
         }
         return bd;
     }

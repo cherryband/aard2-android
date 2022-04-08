@@ -1,13 +1,11 @@
 package space.cherryband.ari;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,10 +36,9 @@ public class ArticleFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Activity activity = getActivity();
-        Context context = activity.getActionBar().getThemedContext();
-        icBookmark =  IconMaker.actionBar(context, IconMaker.IC_BOOKMARK);
-        icBookmarkO = IconMaker.actionBar(context, IconMaker.IC_BOOKMARK_O);
-        icFullscreen = IconMaker.actionBar(context, IconMaker.IC_FULLSCREEN);
+        icBookmark =  IconMaker.actionBar(activity, IconMaker.IC_BOOKMARK);
+        icBookmarkO = IconMaker.actionBar(activity, IconMaker.IC_BOOKMARK_O);
+        icFullscreen = IconMaker.actionBar(activity, IconMaker.IC_FULLSCREEN);
         setHasOptionsMenu(true);
     }
 
@@ -54,10 +51,8 @@ public class ArticleFragment extends Fragment {
         inflater.inflate(R.menu.article, menu);
         miBookmark = menu.findItem(R.id.action_bookmark_article);
         miFullscreen = menu.findItem(R.id.action_fullscreen);
-        if (Build.VERSION.SDK_INT < 19) {
-            miFullscreen.setVisible(false);
-            miFullscreen.setEnabled(false);
-        }
+        miFullscreen.setVisible(false);
+        miFullscreen.setEnabled(false);
     }
 
     private void displayBookmarked(boolean value) {
@@ -81,7 +76,7 @@ public class ArticleFragment extends Fragment {
             return true;
         }
         if (itemId == R.id.action_bookmark_article) {
-            Application app = (Application)getActivity().getApplication();
+            Application app = (Application) getActivity().getApplication();
             if (this.url != null) {
                 if (item.isChecked()) {
                     app.removeBookmark(this.url);
@@ -94,7 +89,7 @@ public class ArticleFragment extends Fragment {
             return true;
         }
         if (itemId == R.id.action_fullscreen) {
-            ((ArticleCollectionActivity)getActivity()).toggleFullScreen();
+            ((ArticleCollectionActivity) getActivity()).toggleFullScreen();
             return true;
         }
         if (itemId == R.id.action_zoom_in) {
@@ -118,12 +113,10 @@ public class ArticleFragment extends Fragment {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             final String[] styleTitles = view.getAvailableStyles();
             builder.setTitle(R.string.select_style)
-                    .setItems(styleTitles, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            String title = styleTitles[which];
-                            view.saveStylePref(title);
-                            view.applyStylePref();
-                        }
+                    .setItems(styleTitles, (dialog, which) -> {
+                        String title = styleTitles[which];
+                        view.saveStylePref(title);
+                        view.applyStylePref();
                     });
             AlertDialog dialog = builder.create();
             dialog.show();
@@ -134,15 +127,15 @@ public class ArticleFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
 
         Bundle args = getArguments();
         this.url = args == null ? null : args.getString(ARG_URL);
         if (url == null) {
             View layout = inflater.inflate(R.layout.empty_view, container, false);
-            TextView textView = (TextView)layout.findViewById(R.id.empty_text);
+            TextView textView = layout.findViewById(R.id.empty_text);
             textView.setText("");
-            ImageView icon = (ImageView) layout.findViewById(R.id.empty_icon);
+            ImageView icon = layout.findViewById(R.id.empty_icon);
             icon.setImageDrawable(IconMaker.emptyView(getActivity(),
                     IconMaker.IC_BAN));
             this.setHasOptionsMenu(false);
@@ -150,21 +143,18 @@ public class ArticleFragment extends Fragment {
         }
 
         View layout = inflater.inflate(R.layout.article_view, container, false);
-        final ProgressBar progressBar = (ProgressBar) layout.findViewById(R.id.webViewPogress);
-        view = (ArticleWebView) layout.findViewById(R.id.webView);
+        final ProgressBar progressBar = layout.findViewById(R.id.webViewPogress);
+        view = layout.findViewById(R.id.webView);
         view.restoreState(savedInstanceState);
         view.loadUrl(url);
         view.setWebChromeClient(new WebChromeClient() {
             public void onProgressChanged(WebView view, final int newProgress) {
                 final Activity activity = getActivity();
                 if (activity != null) {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            progressBar.setProgress(newProgress);
-                            if (newProgress >= progressBar.getMax()) {
-                                progressBar.setVisibility(ViewGroup.GONE);
-                            }
+                    activity.runOnUiThread(() -> {
+                        progressBar.setProgress(newProgress);
+                        if (newProgress >= progressBar.getMax()) {
+                            progressBar.setVisibility(ViewGroup.GONE);
                         }
                     });
                 }
@@ -187,11 +177,10 @@ public class ArticleFragment extends Fragment {
         super.onPrepareOptionsMenu(menu);
         if (this.url == null) {
             miBookmark.setVisible(false);
-        }
-        else {
-            Application app = (Application)getActivity().getApplication();
+        } else {
+            Application app = (Application) getActivity().getApplication();
             try {
-                boolean bookmarked =  app.isBookmarked(this.url);
+                boolean bookmarked = app.isBookmarked(this.url);
                 displayBookmarked(bookmarked);
             } catch (Exception ex) {
                 miBookmark.setVisible(false);

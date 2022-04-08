@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Aard 2</string>
+    <string name="app_name">Ari</string>
     <string name="subtitle_lookup">Pesquisar</string>
     <string name="subtitle_bookmark">Marcadores</string>
     <string name="subtitle_history">Histórico</string>
@@ -32,7 +32,7 @@
     <string name="action_zoom_out">Reduzir</string>
     <string name="action_zoom_in">Ampliar</string>
     <string name="action_zoom_reset">Repor ampliação</string>
-    <string name="action_select_style">Tema...</string>
+    <string name="action_select_style">Tema…</string>
     <string name="select_style">Selecione tema</string>
     <string name="default_style_title">Predefinido</string>
     <string name="subtitle_settings">Definições</string>
@@ -52,7 +52,7 @@
     <string name="article_collection_nothing_to_lookup">Nada para pesquisar</string>
     <string name="article_view_msg_not_found">Não encontrado</string>
     <string name="dictionaries_please_wait">Por favor aguarde</string>
-    <string name="dictionaries_scanning_device">A procurar dicionários no dispositivo...</string>
+    <string name="dictionaries_scanning_device">A procurar dicionários no dispositivo…</string>
     <string name="dictionaries_confirm_forget">Esquecer "%1$s"?</string>
     <string name="lookup_nothing_found">Sem resultados</string>
     <string name="main_empty_bookmarks">Sem marcadores</string>

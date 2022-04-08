@@ -1,7 +1,6 @@
 package space.cherryband.ari;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.provider.DocumentFile;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
@@ -24,7 +24,7 @@ public class SettingsFragment extends ListFragment {
     private final static String TAG = SettingsFragment.class.getSimpleName();
 
     private SettingsListAdapter listAdapter;
-    private AlertDialog         clearCacheConfirmationDialog;
+    private AlertDialog clearCacheConfirmationDialog;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -38,26 +38,16 @@ public class SettingsFragment extends ListFragment {
         if (position == SettingsListAdapter.POS_CLEAR_CACHE) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.confirm_clear_cached_content)
-                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            WebView webView = new WebView(getActivity());
-                            webView.clearCache(true);
-                        }
+                    .setPositiveButton(android.R.string.yes, (dialog, id12) -> {
+                        WebView webView = new WebView(getActivity());
+                        webView.clearCache(true);
                     })
-                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog
-                        }
+                    .setNegativeButton(android.R.string.no, (dialog, id1) -> {
+                        // User cancelled the dialog
                     });
             clearCacheConfirmationDialog = builder.create();
-            clearCacheConfirmationDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
-                @Override
-                public void onDismiss(DialogInterface dialogInterface) {
-                    clearCacheConfirmationDialog = null;
-                }
-            });
+            clearCacheConfirmationDialog.setOnDismissListener(dialogInterface -> clearCacheConfirmationDialog = null);
             clearCacheConfirmationDialog.show();
-            return;
         }
     }
 
@@ -74,8 +64,8 @@ public class SettingsFragment extends ListFragment {
                 InputStream is = getActivity().getContentResolver().openInputStream(dataUri);
                 DocumentFile documentFile = DocumentFile.fromSingleUri(getContext(), dataUri);
                 String fileName = documentFile.getName();
-                Application app = (Application)getActivity().getApplication();
-                String userCss = app.readTextFile(is, 256 * 1024);
+                Application app = (Application) getActivity().getApplication();
+                String userCss = Application.readTextFile(is, 256 * 1024);
                 List<String> pathSegments = dataUri.getPathSegments();
                 Log.d(TAG, fileName);
                 Log.d(TAG, userCss);
@@ -98,13 +88,11 @@ public class SettingsFragment extends ListFragment {
                     Toast.makeText(getActivity(), R.string.msg_failed_to_store_user_style,
                             Toast.LENGTH_LONG).show();
                 }
-            }
-            catch (Application.FileTooBigException e) {
+            } catch (Application.FileTooBigException e) {
                 Log.d(TAG, "File is too big: " + dataUri);
                 Toast.makeText(getActivity(), R.string.msg_file_too_big,
                         Toast.LENGTH_LONG).show();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 Log.d(TAG, "Failed to load: " + dataUri, e);
                 Toast.makeText(getActivity(), R.string.msg_failed_to_read_file,
                         Toast.LENGTH_LONG).show();

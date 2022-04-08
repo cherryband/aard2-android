@@ -17,7 +17,7 @@ public class SlobDescriptor extends BaseDescriptor {
     private final static transient String TAG = SlobDescriptor.class.getSimpleName();
 
     public String path;
-    public Map<String, String> tags = new HashMap<String, String>();
+    public Map<String, String> tags = new HashMap<>();
     public boolean active = true;
     public long priority;
     public long blobCount;
@@ -46,8 +46,7 @@ public class SlobDescriptor extends BaseDescriptor {
             FileInputStream fileInputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
             slob = new Slob(fileInputStream.getChannel(), path);
             this.update(slob);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.e(TAG, "Error while opening " + this.path, e);
             error = e.getMessage();
             if (Log.isLoggable(TAG, Log.DEBUG)) {

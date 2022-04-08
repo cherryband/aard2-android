@@ -1,7 +1,7 @@
 /*
-* This file is heavily inspired by the Android Open Source Project
-* licensed under the Apache License, Version 2.0
-*/
+ * This file is heavily inspired by the Android Open Source Project
+ * licensed under the Apache License, Version 2.0
+ */
 
 package space.cherryband.ari;
 
@@ -22,10 +22,10 @@ import android.widget.EditText;
 class FindActionModeCallback implements ActionMode.Callback, TextWatcher,
         View.OnLongClickListener, View.OnClickListener {
 
-    private View searchView;
-    private EditText editText;
-    private SearchableWebView webview;
-    private InputMethodManager imManager;
+    private final View searchView;
+    private final EditText editText;
+    private final SearchableWebView webview;
+    private final InputMethodManager imManager;
 
     FindActionModeCallback(Context context, SearchableWebView webview) {
         this.webview = webview;
@@ -42,7 +42,7 @@ class FindActionModeCallback implements ActionMode.Callback, TextWatcher,
     /* Place text in the text field so it can be searched for. */
     void setText(String text) {
         editText.setText(text);
-        Spannable span = (Spannable) editText.getText();
+        Spannable span = editText.getText();
         int length = span.length();
         // Ideally, we would like to set the selection to the whole field,
         // but this brings up the Text selection CAB, which dismisses this
@@ -68,10 +68,7 @@ class FindActionModeCallback implements ActionMode.Callback, TextWatcher,
     void findAll() {
         String find = editText.getText().toString();
 
-        if (Build.VERSION.SDK_INT < 16)
-            webview.findAll(find);
-        else
-            webview.findAllAsync(find);
+        webview.findAllAsync(find);
     }
 
     void showSoftInput() {
@@ -111,6 +108,7 @@ class FindActionModeCallback implements ActionMode.Callback, TextWatcher,
         imManager.hideSoftInputFromWindow(webview.getWindowToken(), 0);
         webview.setLastFind(editText.getText().toString());
     }
+
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
         return false;
@@ -119,15 +117,13 @@ class FindActionModeCallback implements ActionMode.Callback, TextWatcher,
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         imManager.hideSoftInputFromWindow(webview.getWindowToken(), 0);
-        switch(item.getItemId()) {
-            case R.id.find_prev:
-                findNext(false);
-                break;
-            case R.id.find_next:
-                findNext(true);
-                break;
-            default:
-                return false;
+        int itemId = item.getItemId();
+        if (itemId == R.id.find_prev) {
+            findNext(false);
+        } else if (itemId == R.id.find_next) {
+            findNext(true);
+        } else {
+            return false;
         }
         return true;
     }

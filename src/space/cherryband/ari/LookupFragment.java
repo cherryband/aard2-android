@@ -2,15 +2,14 @@ package space.cherryband.ari;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.TextView;
 
 import java.util.Timer;
@@ -18,11 +17,12 @@ import java.util.TimerTask;
 
 public class LookupFragment extends BaseListFragment implements LookupListener {
 
-    private Timer       timer;
-    private SearchView  searchView;
+    private Timer timer;
+    private SearchView searchView;
     private Application app;
     private SearchView.OnQueryTextListener queryTextListener;
     private SearchView.OnCloseListener closeListener;
+    private MenuItemCompat.OnActionExpandListener openListener;
 
     private final static String TAG = LookupFragment.class.getSimpleName();
 
@@ -53,27 +53,17 @@ public class LookupFragment extends BaseListFragment implements LookupListener {
         super.onViewCreated(view, savedInstanceState);
         setBusy(false);
         ListView listView = getListView();
-        listView.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                Log.i("--", "Item clicked: " + position);
-                Intent intent = new Intent(getActivity(),
-                        ArticleCollectionActivity.class);
-                intent.putExtra("position", position);
-                startActivity(intent);
-            }
+        listView.setOnItemClickListener((parent, view1, position, id) -> {
+            Log.i("--", "Item clicked: " + position);
+            Intent intent = new Intent(getActivity(),
+                    ArticleCollectionActivity.class);
+            intent.putExtra("position", position);
+            startActivity(intent);
         });
         final Application app = (Application) getActivity().getApplication();
         getListView().setAdapter(app.lastResult);
 
-        closeListener = new SearchView.OnCloseListener() {
-
-            @Override
-            public boolean onClose() {
-                return true;
-            }
-        };
+        closeListener = () -> true;
 
         queryTextListener = new SearchView.OnQueryTextListener() {
 
@@ -96,12 +86,7 @@ public class LookupFragment extends BaseListFragment implements LookupListener {
                         if (app.getLookupQuery().equals(query)) {
                             return;
                         }
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                app.lookup(query);
-                            }
-                        });
+                        getActivity().runOnUiThread(() -> app.lookup(query));
                         scheduledLookup = null;
                     }
                 };
@@ -117,6 +102,25 @@ public class LookupFragment extends BaseListFragment implements LookupListener {
             }
         };
 
+        openListener = new MenuItemCompat.OnActionExpandListener(){
+
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem menuItem) {
+                View filterActionView = MenuItemCompat.getActionView(menuItem);
+                searchView = filterActionView.findViewById(R.id.fldLookup);
+                searchView.setQueryHint(menuItem.getTitle());
+                searchView.setIconified(false);
+                searchView.setOnQueryTextListener(queryTextListener);
+                searchView.setOnCloseListener(closeListener);
+                searchView.setSubmitButtonEnabled(false);
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem menuItem) {
+                return true;
+            }
+        };
     }
 
 
@@ -124,29 +128,25 @@ public class LookupFragment extends BaseListFragment implements LookupListener {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         timer = new Timer();
         inflater.inflate(R.menu.lookup, menu);
-        MenuItem miFilter = menu.findItem(R.id.action_lookup);
-        View filterActionView = miFilter.getActionView();
-        searchView = (SearchView) filterActionView.findViewById(R.id.fldLookup);
-        searchView.setQueryHint(miFilter.getTitle());
-        searchView.setIconified(false);
-        searchView.setOnQueryTextListener(queryTextListener);
-        searchView.setOnCloseListener(closeListener);
-        searchView.setSubmitButtonEnabled(false);
+        MenuItem menuItem = menu.findItem(R.id.action_lookup);
+        MenuItemCompat.setOnActionExpandListener(menuItem, openListener);
     }
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         if (app.autoPaste()) {
-            CharSequence clipboard  = Clipboard.take(this.getActivity());
+            CharSequence clipboard = Clipboard.take(this.getActivity());
             if (clipboard != null) {
                 app.lookup(clipboard.toString(), false);
             }
         }
-        CharSequence query = app.getLookupQuery();
-        searchView.setQuery(query, true);
-        if (app.lastResult.getCount() > 0) {
-            searchView.clearFocus();
+        if (searchView != null) {
+            CharSequence query = app.getLookupQuery();
+            searchView.setQuery(query, true);
+            if (app.lastResult.getCount() > 0) {
+                searchView.clearFocus();
+            }
         }
     }
 
@@ -162,10 +162,10 @@ public class LookupFragment extends BaseListFragment implements LookupListener {
     private void setBusy(boolean busy) {
         setListShown(!busy);
         if (!busy) {
-            TextView emptyText = ((TextView)emptyView.findViewById(R.id.empty_text));
+            TextView emptyText = emptyView.findViewById(R.id.empty_text);
             String msg = "";
             String query = app.getLookupQuery();
-            if (query != null && !query.toString().equals("")) {
+            if (query != null && !query.equals("")) {
                 msg = getString(R.string.lookup_nothing_found);
             }
             emptyText.setText(msg);

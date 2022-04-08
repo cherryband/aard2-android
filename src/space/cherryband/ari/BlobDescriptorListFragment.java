@@ -1,13 +1,14 @@
 package space.cherryband.ari;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -17,7 +18,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import android.widget.SearchView;
 
 
 abstract class BlobDescriptorListFragment extends BaseListFragment {
@@ -28,8 +28,8 @@ abstract class BlobDescriptorListFragment extends BaseListFragment {
     private Drawable icArrowUp;
     private Drawable icArrowDown;
 
-    private BlobDescriptorListAdapter       listAdapter;
-    private AlertDialog                     deleteConfirmationDialog = null;
+    private BlobDescriptorListAdapter listAdapter;
+    private AlertDialog deleteConfirmationDialog = null;
 
     private final static String PREF_SORT_ORDER = "sortOrder";
     private final static String PREF_SORT_DIRECTION = "sortDir";
@@ -37,12 +37,12 @@ abstract class BlobDescriptorListFragment extends BaseListFragment {
     private MenuItem miFilter = null;
 
     public boolean isFilterExpanded() {
-        return miFilter != null && miFilter.isActionViewExpanded();
+        return miFilter != null && MenuItemCompat.isActionViewExpanded(miFilter);
     }
 
     public void collapseFilter() {
         if (miFilter != null) {
-            miFilter.collapseActionView();
+            MenuItemCompat.collapseActionView(miFilter);
         }
     }
 
@@ -63,47 +63,38 @@ abstract class BlobDescriptorListFragment extends BaseListFragment {
     abstract String getPreferencesNS();
 
     private SharedPreferences prefs() {
-        return getActivity().getSharedPreferences(getPreferencesNS(), Activity.MODE_PRIVATE);
+        return getActivity().getSharedPreferences(getPreferencesNS(), AppCompatActivity.MODE_PRIVATE);
     }
 
 
     protected boolean onSelectionActionItemClicked(final ActionMode mode, MenuItem item) {
         ListView listView = getListView();
-        switch (item.getItemId()) {
-            case R.id.blob_descriptor_delete:
-                int count = listView.getCheckedItemCount();
-                String countStr = getResources().getQuantityString(getDeleteConfirmationItemCountResId(), count, count);
-                String message = getString(R.string.blob_descriptor_confirm_delete, countStr);
-                deleteConfirmationDialog = new AlertDialog.Builder(getActivity())
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle("")
-                        .setMessage(message)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                deleteSelectedItems();
-                                mode.finish();
-                                deleteConfirmationDialog = null;
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, null).create();
-                deleteConfirmationDialog.setOnDismissListener(new DialogInterface.OnDismissListener(){
-                    @Override
-                    public void onDismiss(DialogInterface dialogInterface) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.blob_descriptor_delete) {
+            int count = listView.getCheckedItemCount();
+            String countStr = getResources().getQuantityString(getDeleteConfirmationItemCountResId(), count, count);
+            String message = getString(R.string.blob_descriptor_confirm_delete, countStr);
+            deleteConfirmationDialog = new AlertDialog.Builder(getActivity())
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setTitle("")
+                    .setMessage(message)
+                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                        deleteSelectedItems();
+                        mode.finish();
                         deleteConfirmationDialog = null;
-                    }
-                });
-                deleteConfirmationDialog.show();
-                return true;
-            case R.id.blob_descriptor_select_all:
-                int itemCount = listView.getCount();
-                for (int i = itemCount - 1; i > -1; --i) {
-                    listView.setItemChecked(i, true);
-                }
-                return true;
-            default:
-                return false;
+                    })
+                    .setNegativeButton(android.R.string.no, null).create();
+            deleteConfirmationDialog.setOnDismissListener(dialogInterface -> deleteConfirmationDialog = null);
+            deleteConfirmationDialog.show();
+            return true;
+        } else if (itemId == R.id.blob_descriptor_select_all) {
+            int itemCount = listView.getCount();
+            for (int i = itemCount - 1; i > -1; --i) {
+                listView.setItemChecked(i, true);
+            }
+            return true;
         }
+        return false;
     }
 
     @Override
@@ -115,7 +106,7 @@ abstract class BlobDescriptorListFragment extends BaseListFragment {
         SharedPreferences p = this.prefs();
 
         String sortOrderStr = p.getString(PREF_SORT_ORDER,
-                                          BlobDescriptorList.SortOrder.TIME.name());
+                BlobDescriptorList.SortOrder.TIME.name());
         BlobDescriptorList.SortOrder sortOrder = BlobDescriptorList.SortOrder.valueOf(sortOrderStr);
 
         boolean sortDir = p.getBoolean(PREF_SORT_DIRECTION, false);
@@ -127,22 +118,18 @@ abstract class BlobDescriptorListFragment extends BaseListFragment {
         final FragmentActivity activity = getActivity();
 
         icFilter = IconMaker.actionBar(activity, IconMaker.IC_FILTER);
-        icClock =  IconMaker.actionBar(activity, IconMaker.IC_CLOCK);
+        icClock = IconMaker.actionBar(activity, IconMaker.IC_CLOCK);
         icList = IconMaker.actionBar(activity, IconMaker.IC_LIST);
         icArrowUp = IconMaker.actionBar(activity, IconMaker.IC_SORT_ASC);
         icArrowDown = IconMaker.actionBar(activity, IconMaker.IC_SORT_DESC);
 
         final ListView listView = getListView();
-        listView.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                Intent intent = new Intent(activity,
-                        ArticleCollectionActivity.class);
-                intent.setAction(getItemClickAction());
-                intent.putExtra("position", position);
-                startActivity(intent);
-            }
+        listView.setOnItemClickListener((parent, view1, position, id) -> {
+            Intent intent = new Intent(activity,
+                    ArticleCollectionActivity.class);
+            intent.setAction(getItemClickAction());
+            intent.putExtra("position", position);
+            startActivity(intent);
         });
 
         setListAdapter(listAdapter);
@@ -156,7 +143,7 @@ abstract class BlobDescriptorListFragment extends BaseListFragment {
             if (checked) {
                 getDescriptorList().remove(position);
             }
-         }
+        }
     }
 
     @Override
@@ -172,8 +159,8 @@ abstract class BlobDescriptorListFragment extends BaseListFragment {
         miFilter = menu.findItem(R.id.action_filter);
         miFilter.setIcon(icFilter);
 
-        View filterActionView = miFilter.getActionView();
-        SearchView searchView = (SearchView) filterActionView
+        View filterActionView = MenuItemCompat.getActionView(miFilter);
+        /*SearchView searchView = (SearchView) filterActionView
                 .findViewById(R.id.fldFilter);
         searchView.setQueryHint(miFilter.getTitle());
         searchView.setQuery(list.getFilter(), true);
@@ -191,7 +178,7 @@ abstract class BlobDescriptorListFragment extends BaseListFragment {
                 }
                 return true;
             }
-        });
+        });*/
         setSortOrder(menu.findItem(R.id.action_sort_order), list.getSortOrder());
         setAscending(menu.findItem(R.id.action_sort_asc), list.isAscending());
 

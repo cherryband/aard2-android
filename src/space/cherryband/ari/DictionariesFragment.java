@@ -48,7 +48,7 @@ public class DictionariesFragment extends BaseListFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        final Application app = (Application)getActivity().getApplication();
+        final Application app = (Application) getActivity().getApplication();
         listAdapter = new DictionaryListAdapter(app.dictionaries, getActivity());
         setListAdapter(listAdapter);
     }
@@ -61,13 +61,8 @@ public class DictionariesFragment extends BaseListFragment {
         btn.setCompoundDrawablesWithIntrinsicBounds(
                 IconMaker.list(getActivity(), IconMaker.IC_ADD),
                 null, null, null);
-        btn.setOnClickListener(new OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                selectDictionaryFiles();
-            }
-        });
-        LinearLayout emptyViewLayout = (LinearLayout)emptyView;
+        btn.setOnClickListener(v -> selectDictionaryFiles());
+        LinearLayout emptyViewLayout = (LinearLayout) emptyView;
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -106,8 +101,7 @@ public class DictionariesFragment extends BaseListFragment {
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         try {
             startActivityForResult(intent, FILE_SELECT_REQUEST);
-        }
-        catch (ActivityNotFoundException e){
+        } catch (ActivityNotFoundException e) {
             Log.d(TAG, "Not activity to get content", e);
             Toast.makeText(getContext(), R.string.msg_no_activity_to_get_content,
                     Toast.LENGTH_LONG).show();
@@ -126,7 +120,7 @@ public class DictionariesFragment extends BaseListFragment {
         Log.d(TAG, String.format("req code %s, result code: %s, data: %s", requestCode, resultCode, dataUri));
 
         if (resultCode == Activity.RESULT_OK && intent != null) {
-            final Application app = ((Application)getActivity().getApplication());
+            final Application app = ((Application) getActivity().getApplication());
             List<Uri> selection = new ArrayList<>();
             if (dataUri != null) {
                 selection.add(dataUri);

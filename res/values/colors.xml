@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="tab_icon">#ff888888</color>
-    <color name="actionbar_icon">@android:color/secondary_text_dark</color>
-    <color name="empty_view_icon">#ffcccccc</color>
+    <color name="tab_icon">#9fff</color>
+    <color name="actionbar_icon">#9fff</color>
+    <color name="empty_view_icon">#caaa</color>
     <color name="list_icon">@android:color/holo_blue_dark</color>
+    <color name="primary_color">#FB8C00</color>
+    <color name="secondary_color">#D84315</color>
 </resources>
 

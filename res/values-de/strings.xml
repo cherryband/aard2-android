@@ -1,5 +1,5 @@
 ﻿<resources>
-    <string name="app_name">Aard 2</string>
+    <string name="app_name">Ari</string>
     <string name="subtitle_lookup">Finden</string>
     <string name="subtitle_bookmark">Lesezeichen</string>
     <string name="subtitle_history">Verlauf</string>
@@ -33,7 +33,7 @@
     <string name="action_zoom_out">Verkleinern</string>
     <string name="action_zoom_in">Vergrössern</string>
     <string name="action_zoom_reset">Vergrösserung zurücksetzen</string>
-    <string name="action_select_style">Stile...</string>
+    <string name="action_select_style">Stile…</string>
     <string name="select_style">Wähle Stil</string>
     <string name="default_style_title">Vorgabe</string>
     <string name="subtitle_settings">Einstellung</string>
@@ -50,7 +50,7 @@
     <string name="article_collection_nothing_to_lookup">Nichts zum Nachschlagen</string>
     <string name="article_view_msg_not_found">Nichts gefunden</string>
     <string name="dictionaries_please_wait">Bitte warten</string>
-    <string name="dictionaries_scanning_device">Durchsuche Gerät nach Wörterbüchern...</string>
+    <string name="dictionaries_scanning_device">Durchsuche Gerät nach Wörterbüchern…</string>
     <string name="dictionaries_confirm_forget">Vergesse %1$s?</string>
     <string name="lookup_nothing_found">Nichts gefunden</string>
     <string name="main_empty_bookmarks">Kein Lesezeichen</string>

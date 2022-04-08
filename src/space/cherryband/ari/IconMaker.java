@@ -42,11 +42,10 @@ class IconMaker {
 
 
     static FontDrawable make(Context context, char c, int sizeDp, int color) {
-        FontDrawable drawable = new FontDrawable.Builder(context, c, CUSTOM_FONT_PATH)
+        return new FontDrawable.Builder(context, c, CUSTOM_FONT_PATH)
                 .setSizeDp(sizeDp)
                 .setColor(color)
                 .build();
-        return drawable;
     }
 
     static FontDrawable makeWithColorRes(Context context, char c, int sizeDp, int colorRes) {

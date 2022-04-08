@@ -35,21 +35,24 @@ public abstract class BaseListFragment extends ListFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         emptyView = inflater.inflate(R.layout.empty_view, container, false);
-        TextView emptyText = ((TextView)emptyView.findViewById(R.id.empty_text));
+        TextView emptyText = emptyView.findViewById(R.id.empty_text);
         emptyText.setMovementMethod(LinkMovementMethod.getInstance());
         emptyText.setText(getEmptyText());
-        ImageView emptyIcon = (ImageView)(emptyView.findViewById(R.id.empty_icon));
+        ImageView emptyIcon = emptyView.findViewById(R.id.empty_icon);
         emptyIcon.setImageDrawable(IconMaker.emptyView(getActivity(), getEmptyIcon()));
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
-    protected void setSelectionMode(boolean selectionMode){};
+    protected void setSelectionMode(boolean selectionMode) {
+    }
 
-    protected int getSelectionMenuId(){return 0;};
+    protected int getSelectionMenuId() {
+        return 0;
+    }
 
-    protected boolean onSelectionActionItemClicked(final ActionMode mode, MenuItem item){
+    protected boolean onSelectionActionItemClicked(final ActionMode mode, MenuItem item) {
         return false;
-    };
+    }
 
     protected boolean supportsSelection() {
         return true;

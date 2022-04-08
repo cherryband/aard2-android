@@ -11,14 +11,15 @@
         android:usesCleartextTraffic="true"
         android:name=".Application"
         android:allowBackup="true"
-        android:icon="@drawable/aard2"
+        android:icon="@drawable/ic_ari"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.Holo.Light.DarkActionBar" >
+        android:theme="@style/Theme.App" >
 
         <activity
             android:name=".MainActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout"
-            android:windowSoftInputMode="stateHidden" >
+            android:windowSoftInputMode="stateHidden"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -30,7 +31,8 @@
             android:name=".ArticleCollectionActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout"
             android:excludeFromRecents="true"
-            android:taskAffinity="" >
+            android:taskAffinity=""
+            android:exported="true">
             <intent-filter>
                 <action android:name="aard2.lookup" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -57,7 +59,8 @@
         <activity-alias
     android:enabled="false"
     android:name="ar.wikipedia.org"
-    android:targetActivity=".ArticleCollectionActivity" >
+    android:targetActivity=".ArticleCollectionActivity"
+            android:exported="true">
 
   <intent-filter>
     <action android:name="android.intent.action.VIEW" />

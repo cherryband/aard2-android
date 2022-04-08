@@ -2,6 +2,7 @@ package space.cherryband.ari;
 
 import android.database.DataSetObservable;
 import android.database.DataSetObserver;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.util.AbstractList;
@@ -22,7 +23,7 @@ abstract class BaseDescriptorList<T extends BaseDescriptor> extends AbstractList
         this.typeParameterClass = typeParameterClass;
         this.store = store;
         this.dataSetObservable = new DataSetObservable();
-        this.list = new ArrayList<T>();
+        this.list = new ArrayList<>();
         this.updating = 0;
     }
 
@@ -83,7 +84,7 @@ abstract class BaseDescriptorList<T extends BaseDescriptor> extends AbstractList
     }
 
     @Override
-    public boolean addAll(int location, Collection<? extends T> collection) {
+    public boolean addAll(int location, @NonNull Collection<? extends T> collection) {
         beginUpdate();
         boolean result = super.addAll(location, collection);
         endUpdate(result);
@@ -91,7 +92,7 @@ abstract class BaseDescriptorList<T extends BaseDescriptor> extends AbstractList
     }
 
     @Override
-    public boolean addAll(Collection<? extends T> collection) {
+    public boolean addAll(@NonNull Collection<? extends T> collection) {
         beginUpdate();
         boolean result = super.addAll(collection);
         endUpdate(result);

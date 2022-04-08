@@ -11,20 +11,19 @@
 
     <TextView
         android:id="@+id/setting_about"
-        style="@android:style/TextAppearance.Holo.SearchResult.Title"
+        style="@style/TextAppearance.AppCompat.Body1"
         android:text="@string/setting_about"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="14dip"
+        android:layout_marginEnd="14dip"
         android:textSize="20sp"/>
 
     <TextView
         android:id="@+id/application_version"
-        style="@android:style/TextAppearance.Holo.SearchResult.Subtitle"
+        style="@style/TextAppearance.AppCompat.Small"
         android:text="@string/application_version"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
         android:layout_marginBottom="6dp"
         android:layout_marginRight="14dip"
         android:layout_marginLeft="14dip"
@@ -44,18 +43,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:baselineAlignBottom="true"
-            android:layout_marginRight="4dp"
             android:layout_marginEnd="4dp"
             />
 
         <TextView
             android:id="@+id/application_copyright"
-            style="@android:style/TextAppearance.Holo.SearchResult.Subtitle"
+            style="@style/TextAppearance.AppCompat.Small"
             android:text="@string/application_copyright"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            />
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 
@@ -73,18 +69,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:baselineAlignBottom="true"
-            android:layout_marginRight="4dp"
             android:layout_marginEnd="4dp"
             />
         <TextView
             android:id="@+id/application_license"
-            style="@android:style/TextAppearance.Holo.SearchResult.Subtitle"
+            style="@style/TextAppearance.AppCompat.Small"
             android:text="@string/application_license_name"
             android:autoLink="web"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"
-            android:focusable="false"
+            android:focusable="true"
             />
     </LinearLayout>
 
@@ -102,18 +97,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:baselineAlignBottom="true"
-            android:layout_marginRight="4dp"
             android:layout_marginEnd="4dp"
             />
 
         <TextView
-            style="@android:style/TextAppearance.Holo.SearchResult.Subtitle"
+            style="@style/TextAppearance.AppCompat.Small"
             android:text="@string/application_home_url"
             android:autoLink="web"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            />
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 

@@ -15,7 +15,7 @@
         android:text="@string/setting_clear_cache"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="14dip"
+        android:layout_marginEnd="14dip"
         android:textSize="20sp"/>
 
     <TextView
@@ -24,7 +24,7 @@
         android:text="@string/setting_clear_cache_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_below="@id/setting_clear_cache"
         android:layout_marginRight="14dip"
         android:layout_marginLeft="14dip"

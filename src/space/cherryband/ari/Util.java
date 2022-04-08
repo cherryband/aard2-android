@@ -12,23 +12,21 @@ class Util {
     static final String TAG = Util.class.getSimpleName();
 
     static int compare(long l1, long l2) {
-        return l1 < l2 ? -1 : (l1 == l2 ? 0 : 1);
+        return Long.compare(l1, l2);
     }
 
     static <T extends Comparable<? super T>> void sort(List<T> list) {
         try {
             Collections.sort(list);
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             Log.w(TAG, "Error while sorting:", e);
         }
-    };
+    }
 
     static <T> void sort(List<T> list, Comparator<? super T> comparator) {
         try {
-            Collections.sort(list, comparator);
-        }
-        catch(Exception e) {
+            list.sort(comparator);
+        } catch (Exception e) {
             //From http://www.oracle.com/technetwork/java/javase/compatibility-417013.html#source
             /*
             Synopsis: Updated sort behavior for Arrays and Collections may throw an IllegalArgumentException
@@ -60,12 +58,12 @@ class Util {
             return null;
         }
         String normalizedHost = host;
-        String[] parts = host.split(".");
+        String[] parts = host.split("\\.");
         //if mobile host like en.m.wikipedia.opr get rid of m
         if (parts.length == 4) {
             normalizedHost = String.format("%s.%s.%s", parts[0], parts[2], parts[3]);
         }
-        return "http://"+normalizedHost;
+        return "http://" + normalizedHost;
     }
 
 }

@@ -1,6 +1,5 @@
 package space.cherryband.ari;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -9,7 +8,7 @@ import android.content.pm.PackageManager;
 import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.webkit.WebView;
 
@@ -22,11 +21,13 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -39,68 +40,65 @@ public class Application extends android.app.Application {
     public static final String LOCALHOST = "127.0.0.1";
     public static final String CONTENT_URL_TEMPLATE = "http://" + LOCALHOST + ":%s%s";
 
-    private Slobber                         slobber;
+    private Slobber slobber;
 
-    BlobDescriptorList                      bookmarks;
-    BlobDescriptorList                      history;
-    SlobDescriptorList                      dictionaries;
+    BlobDescriptorList bookmarks;
+    BlobDescriptorList history;
+    SlobDescriptorList dictionaries;
 
-    private static int                      PREFERRED_PORT = 8013;
-    private int                             port = -1;
+    private static final int PREFERRED_PORT = 8013;
+    private int port = -1;
 
-    BlobListAdapter                         lastResult;
+    BlobListAdapter lastResult;
 
     private DescriptorStore<BlobDescriptor> bookmarkStore;
     private DescriptorStore<BlobDescriptor> historyStore;
     private DescriptorStore<SlobDescriptor> dictStore;
 
-    private ObjectMapper                    mapper;
+    private ObjectMapper mapper;
 
-    private String                          lookupQuery = "";
+    private String lookupQuery = "";
 
-    private List<Activity>                  articleActivities;
+    private List<AppCompatActivity> articleActivities;
 
     static String jsStyleSwitcher;
     static String jsUserStyle;
     static String jsClearUserStyle;
     static String jsSetCannedStyle;
 
-    private static final String PREF                    = "app";
-    static final String PREF_RANDOM_FAV_LOOKUP          = "onlyFavDictsForRandomLookup";
-    static final String PREF_UI_THEME                   = "UITheme";
-    static final String PREF_UI_THEME_LIGHT             = "light";
-    static final String PREF_UI_THEME_DARK              = "dark";
-    static final String PREF_USE_VOLUME_FOR_NAV         = "useVolumeForNav";
-    static final String PREF_AUTO_PASTE                 = "autoPaste";
+    private static final String PREF = "app";
+    static final String PREF_RANDOM_FAV_LOOKUP = "onlyFavDictsForRandomLookup";
+    static final String PREF_UI_THEME = "UITheme";
+    static final String PREF_UI_THEME_LIGHT = "light";
+    static final String PREF_UI_THEME_DARK = "dark";
+    static final String PREF_UI_THEME_SYSTEM = "auto";
+    static final String PREF_USE_VOLUME_FOR_NAV = "useVolumeForNav";
+    static final String PREF_AUTO_PASTE = "autoPaste";
 
     private static final String TAG = Application.class.getSimpleName();
 
     @Override
     public void onCreate() {
         super.onCreate();
-        if(Build.VERSION.SDK_INT >= 19) {
-            try {
-                Method setWebContentsDebuggingEnabledMethod = WebView.class.getMethod(
-                        "setWebContentsDebuggingEnabled", boolean.class);
-                setWebContentsDebuggingEnabledMethod.invoke(null, true);
-            } catch (NoSuchMethodException e1) {
-                Log.d(TAG,
-                        "setWebContentsDebuggingEnabledMethod method not found");
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
+        try {
+            Method setWebContentsDebuggingEnabledMethod = WebView.class.getMethod(
+                    "setWebContentsDebuggingEnabled", boolean.class);
+            setWebContentsDebuggingEnabledMethod.invoke(null, true);
+        } catch (NoSuchMethodException e1) {
+            Log.d(TAG,
+                    "setWebContentsDebuggingEnabledMethod method not found");
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
         }
-        articleActivities = Collections.synchronizedList(new ArrayList<Activity>());
+        articleActivities = Collections.synchronizedList(new ArrayList<>());
 
         mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
                 false);
-        dictStore = new DescriptorStore<SlobDescriptor>(mapper, getDir("dictionaries", MODE_PRIVATE));
-        bookmarkStore = new DescriptorStore<BlobDescriptor>(mapper, getDir(
+        dictStore = new DescriptorStore<>(mapper, getDir("dictionaries", MODE_PRIVATE));
+        bookmarkStore = new DescriptorStore<>(mapper, getDir(
                 "bookmarks", MODE_PRIVATE));
-        historyStore = new DescriptorStore<BlobDescriptor>(mapper, getDir(
+        historyStore = new DescriptorStore<>(mapper, getDir(
                 "history", MODE_PRIVATE));
         slobber = new Slobber();
 
@@ -112,7 +110,8 @@ public class Application extends android.app.Application {
                 port, (System.currentTimeMillis() - t0)));
         try {
             InputStream is;
-            is = getClass().getClassLoader().getResourceAsStream("styleswitcher.js");
+            is = Objects.requireNonNull(getClass().getClassLoader())
+                    .getResourceAsStream("styleswitcher.js");
             jsStyleSwitcher = readTextFile(is, 0);
             is = getAssets().open("userstyle.js");
             jsUserStyle = readTextFile(is, 0);
@@ -135,9 +134,9 @@ public class Application extends android.app.Application {
         dictionaries.registerDataSetObserver(new DataSetObserver() {
             @Override
             synchronized public void onChanged() {
-                lastResult.setData(new ArrayList<Slob.Blob>().iterator());
+                lastResult.setData(Collections.emptyIterator());
                 slobber.setSlobs(null);
-                List<Slob> slobs = new ArrayList<Slob>();
+                List<Slob> slobs = new ArrayList<>();
                 for (SlobDescriptor sd : dictionaries) {
                     Slob s = sd.load(getApplicationContext());
                     if (s != null) {
@@ -160,8 +159,8 @@ public class Application extends android.app.Application {
         history.load();
     }
 
-    static String readTextFile(InputStream is, int maxSize) throws IOException, FileTooBigException {
-        InputStreamReader reader = new InputStreamReader(is, "UTF-8");
+    static String readTextFile(InputStream is, int maxSize) throws IOException {
+        InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
         StringWriter sw = new StringWriter();
         char[] buf = new char[16384];
         int count = 0;
@@ -190,12 +189,12 @@ public class Application extends android.app.Application {
             Log.w(TAG,
                     String.format("Failed to start on preferred port %d",
                             portCandidate), e);
-            Set<Integer> seen = new HashSet<Integer>();
+            Set<Integer> seen = new HashSet<>();
             seen.add(PREFERRED_PORT);
             Random rand = new Random();
             int attemptCount = 0;
             while (true) {
-                int value = 1 + (int)Math.floor((65535-1025)*rand.nextDouble());
+                int value = 1 + (int) Math.floor((65535 - 1025) * rand.nextDouble());
                 portCandidate = 1024 + value;
                 if (seen.contains(portCandidate)) {
                     continue;
@@ -221,25 +220,26 @@ public class Application extends android.app.Application {
     }
 
     SharedPreferences prefs() {
-        return this.getSharedPreferences(PREF, Activity.MODE_PRIVATE);
+        return this.getSharedPreferences(PREF, AppCompatActivity.MODE_PRIVATE);
     }
 
     String getPreferredTheme() {
         return prefs().getString(Application.PREF_UI_THEME,
-                Application.PREF_UI_THEME_LIGHT);
+                Application.PREF_UI_THEME_SYSTEM);
     }
 
-    void installTheme(Activity activity) {
+    void installTheme(AppCompatActivity activity) {
         String theme = getPreferredTheme();
         if (theme.equals(PREF_UI_THEME_DARK)) {
-            activity.setTheme(android.R.style.Theme_Holo);
-        }
-        else {
-            activity.setTheme(android.R.style.Theme_Holo_Light_DarkActionBar);
+            activity.setTheme(R.style.Theme_App_Dark);
+        } else if (theme.equals(PREF_UI_THEME_LIGHT)){
+            activity.setTheme(R.style.Theme_App_Light);
+        } else {
+            activity.setTheme(R.style.Theme_App);
         }
     }
 
-    void push(Activity activity) {
+    void push(AppCompatActivity activity) {
         this.articleActivities.add(activity);
         Log.d(TAG, "Activity added, stack size " + this.articleActivities.size());
         if (this.articleActivities.size() > 3) {
@@ -248,13 +248,13 @@ public class Application extends android.app.Application {
         }
     }
 
-    void pop(Activity activity) {
+    void pop(AppCompatActivity activity) {
         this.articleActivities.remove(activity);
     }
 
 
     Slob[] getActiveSlobs() {
-        List<Slob> result = new ArrayList(dictionaries.size());
+        List<Slob> result = new ArrayList<>(dictionaries.size());
         for (SlobDescriptor sd : dictionaries) {
             if (sd.active) {
                 Slob s = slobber.getSlob(sd.id);
@@ -263,11 +263,11 @@ public class Application extends android.app.Application {
                 }
             }
         }
-        return result.toArray(new Slob[result.size()]);
-    };
+        return result.toArray(new Slob[0]);
+    }
 
     Slob[] getFavoriteSlobs() {
-        List<Slob> result = new ArrayList(dictionaries.size());
+        List<Slob> result = new ArrayList<>(dictionaries.size());
         for (SlobDescriptor sd : dictionaries) {
             if (sd.active && sd.priority > 0) {
                 Slob s = slobber.getSlob(sd.id);
@@ -276,8 +276,8 @@ public class Application extends android.app.Application {
                 }
             }
         }
-        return result.toArray(new Slob[result.size()]);
-    };
+        return result.toArray(new Slob[0]);
+    }
 
 
     Iterator<Blob> find(String key) {
@@ -356,7 +356,7 @@ public class Application extends android.app.Application {
     synchronized boolean addDictionary(Uri uri) {
         SlobDescriptor newDesc = SlobDescriptor.fromUri(getApplicationContext(), uri.toString());
         if (newDesc.id != null) {
-            for (SlobDescriptor d: dictionaries) {
+            for (SlobDescriptor d : dictionaries) {
                 if (d.id != null && d.id.equals(newDesc.id)) {
                     return true;
                 }
@@ -372,7 +372,7 @@ public class Application extends android.app.Application {
     }
 
     String getSlobURI(String slobId) {
-        return  slobber.getSlobURI(slobId);
+        return slobber.getSlobURI(slobId);
     }
 
 
@@ -414,7 +414,7 @@ public class Application extends android.app.Application {
         }
         notifyLookupStarted(query);
         if (query == null || query.equals("")) {
-            setLookupResult("", new ArrayList<Slob.Blob>().iterator());
+            setLookupResult("", Collections.emptyIterator());
             notifyLookupFinished(query);
             return;
         }
@@ -438,8 +438,7 @@ public class Application extends android.app.Application {
 
             };
             currentLookupTask.execute();
-        }
-        else {
+        } else {
             setLookupResult(query, find(query));
             notifyLookupFinished(query);
         }
@@ -457,19 +456,19 @@ public class Application extends android.app.Application {
         }
     }
 
-    private void notifyLookupCanceled (String query) {
+    private void notifyLookupCanceled(String query) {
         for (LookupListener l : lookupListeners) {
             l.onLookupCanceled(query);
         }
     }
 
-    private List<LookupListener> lookupListeners = new ArrayList<LookupListener>();
+    private final List<LookupListener> lookupListeners = new ArrayList<>();
 
-    void addLookupListener(LookupListener listener){
+    void addLookupListener(LookupListener listener) {
         lookupListeners.add(listener);
     }
 
-    void removeLookupListener(LookupListener listener){
+    void removeLookupListener(LookupListener listener) {
         lookupListeners.remove(listener);
     }
 
@@ -482,7 +481,7 @@ public class Application extends android.app.Application {
 
         @Override
         protected Void doInBackground(Slob[] slobs) {
-            Set<String> hosts = new HashSet<String>();
+            Set<String> hosts = new HashSet<>();
             for (Slob slob : slobs) {
                 try {
                     String uriValue = slob.getTags().get("uri");
@@ -491,8 +490,7 @@ public class Application extends android.app.Application {
                     if (host != null) {
                         hosts.add(host.toLowerCase());
                     }
-                }
-                catch (Exception ex) {
+                } catch (Exception ex) {
                     Log.w(TAG, String.format("Dictionary %s (%s) has no uri tag", slob.getId(), slob.getTags()), ex);
                 }
             }

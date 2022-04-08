@@ -2,9 +2,9 @@ package space.cherryband.ari;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.util.Patterns;
 
@@ -18,8 +18,8 @@ public class Clipboard {
             Patterns.PHONE
     };
 
-    static CharSequence peek(Activity activity) {
-        ClipboardManager cm = (ClipboardManager)activity.getSystemService(CLIPBOARD_SERVICE);
+    static CharSequence peek(FragmentActivity activity) {
+        ClipboardManager cm = (ClipboardManager) activity.getSystemService(CLIPBOARD_SERVICE);
         ClipData clipData = cm.getPrimaryClip();
         if (clipData == null) {
             return null;
@@ -41,9 +41,9 @@ public class Clipboard {
         return null;
     }
 
-    static CharSequence take(Activity activity) {
+    static CharSequence take(FragmentActivity activity) {
         CharSequence text = peek(activity);
-        ClipboardManager cm = (ClipboardManager)activity.getSystemService(CLIPBOARD_SERVICE);
+        ClipboardManager cm = (ClipboardManager) activity.getSystemService(CLIPBOARD_SERVICE);
         cm.setPrimaryClip(ClipData.newPlainText(null, ""));
         return text;
     }

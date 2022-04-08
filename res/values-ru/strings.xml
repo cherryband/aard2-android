@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Aard 2</string>
+    <string name="app_name">Ari</string>
     <string name="subtitle_lookup">Поиск</string>
     <string name="subtitle_bookmark">Закладки</string>
     <string name="subtitle_history">История</string>
@@ -27,7 +27,7 @@
     <string name="action_zoom_out">Уменьшить</string>
     <string name="action_zoom_in">Увеличить</string>
     <string name="action_zoom_reset">Сброс масштаба</string>
-    <string name="action_select_style">Стиль...</string>
+    <string name="action_select_style">Стиль…</string>
     <string name="select_style">Выбрать стиль</string>
     <string name="default_style_title">По умолчанию</string>
     <string name="subtitle_settings">Настройки</string>
@@ -45,7 +45,7 @@
     <string name="article_collection_nothing_to_lookup">Не указано что искать</string>
     <string name="article_view_msg_not_found">Ресурс не найден</string>
     <string name="dictionaries_please_wait">Подождите</string>
-    <string name="dictionaries_scanning_device">Идёт поиск словарей на устройстве...</string>
+    <string name="dictionaries_scanning_device">Идёт поиск словарей на устройстве…</string>
     <string name="dictionaries_confirm_forget">Исключить %1$s?</string>
     <string name="lookup_nothing_found">Ничего не найдено</string>
     <string name="main_empty_bookmarks">Нет закладок</string>
