@@ -2,7 +2,7 @@ package space.cherryband.ari;
 
 import android.database.DataSetObservable;
 import android.database.DataSetObserver;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import java.util.AbstractList;

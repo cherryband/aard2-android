@@ -6,20 +6,23 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.DataSetObserver;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.core.os.HandlerCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.core.app.NavUtils;
+import androidx.core.app.TaskStackBuilder;
+import androidx.viewpager.widget.PagerTitleStrip;
+import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.app.NavUtils;
-import android.support.v4.app.TaskStackBuilder;
-import android.support.v4.view.PagerTitleStrip;
-import android.support.v4.view.ViewPager;
-import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -73,7 +76,6 @@ public class ArticleCollectionActivity extends AppCompatActivity
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_PROGRESS);
         final Application app = (Application) getApplication();
         app.installTheme(this);
         Objects.requireNonNull(getSupportActionBar()).hide();
@@ -85,118 +87,107 @@ public class ArticleCollectionActivity extends AppCompatActivity
         final Intent intent = getIntent();
         final int position = intent.getIntExtra("position", 0);
 
-        AsyncTask<Void, Void, ArticleCollectionPagerAdapter> createAdapterTask = new AsyncTask<Void, Void, ArticleCollectionPagerAdapter>() {
+        new Thread(() -> {
+            ArticleCollectionPagerAdapter result;
+            Uri articleUrl = intent.getData();
+            try {
+                if (articleUrl != null) {
+                    result = createFromUri(app, articleUrl);
+                } else {
+                    String action = intent.getAction();
+                    if (action == null) {
+                        result = createFromLastResult(app);
+                    } else if (action.equals("showBookmarks")) {
+                        result = createFromBookmarks(app);
+                    } else if (action.equals("showHistory")) {
+                        result = createFromHistory(app);
+                    } else {
+                        result = createFromIntent(app, intent);
+                    }
+                }
+                doWithAdapter(result, position);
+            } catch (Exception e) {
+                toastAndQuit(e.getLocalizedMessage());
+            }
+        }).start();
 
-            Exception exception;
+    }
+
+    private void toastAndQuit(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        finish();
+    }
+
+    private void toastAndQuit(int id) {
+        Toast.makeText(this, id, Toast.LENGTH_SHORT).show();
+        finish();
+    }
+
+    private void doWithAdapter(ArticleCollectionPagerAdapter adapter, int position) {
+        if (isFinishing() || onDestroyCalled) {
+            return;
+        } if (adapter == null) {
+            toastAndQuit(R.string.article_collection_invalid_link);
+            return;
+        }
+
+        articleCollectionPagerAdapter = adapter;
+        int count = articleCollectionPagerAdapter.getCount();
+
+        if (count == 0) {
+            toastAndQuit(R.string.article_collection_nothing_found);
+            return;
+        } if (position > count - 1) {
+            toastAndQuit(R.string.article_collection_selected_not_available);
+            return;
+        }
+
+        setContentView(R.layout.activity_article_collection);
+
+        findViewById(R.id.pager_title_strip)
+                .setVisibility(count == 1 ? ViewGroup.GONE : ViewGroup.VISIBLE);
+
+        viewPager = findViewById(R.id.pager);
+        viewPager.setAdapter(articleCollectionPagerAdapter);
+        viewPager.addOnPageChangeListener(new OnPageChangeListener() {
 
             @Override
-            protected ArticleCollectionPagerAdapter doInBackground(Void... params) {
-                ArticleCollectionPagerAdapter result = null;
-                Uri articleUrl = intent.getData();
-                try {
-                    if (articleUrl != null) {
-                        result = createFromUri(app, articleUrl);
-                    } else {
-                        String action = intent.getAction();
-                        if (action == null) {
-                            result = createFromLastResult(app);
-                        } else if (action.equals("showBookmarks")) {
-                            result = createFromBookmarks(app);
-                        } else if (action.equals("showHistory")) {
-                            result = createFromHistory(app);
-                        } else {
-                            result = createFromIntent(app, intent);
-                        }
-                    }
-                } catch (Exception e) {
-                    this.exception = e;
-                }
-                return result;
+            public void onPageScrollStateChanged(int arg0) {
             }
 
             @Override
-            protected void onPostExecute(ArticleCollectionPagerAdapter adapter) {
-                if (isFinishing() || onDestroyCalled) {
-                    return;
-                }
-                if (this.exception != null) {
-                    Toast.makeText(ArticleCollectionActivity.this,
-                            this.exception.getLocalizedMessage(),
-                            Toast.LENGTH_SHORT).show();
-                    finish();
-                    return;
-                }
-                articleCollectionPagerAdapter = adapter;
-                if (articleCollectionPagerAdapter == null || articleCollectionPagerAdapter.getCount() == 0) {
-                    int messageId;
-                    if (articleCollectionPagerAdapter == null) {
-                        messageId = R.string.article_collection_invalid_link;
-                    } else {
-                        messageId = R.string.article_collection_nothing_found;
-                    }
-                    Toast.makeText(ArticleCollectionActivity.this, messageId,
-                            Toast.LENGTH_SHORT).show();
-                    finish();
-                    return;
-                }
+            public void onPageScrolled(int arg0, float arg1, int arg2) {
+            }
 
-                if (position > articleCollectionPagerAdapter.getCount() - 1) {
-                    Toast.makeText(ArticleCollectionActivity.this, R.string.article_collection_selected_not_available,
-                            Toast.LENGTH_SHORT).show();
-                    finish();
-                    return;
-                }
-
-                setContentView(R.layout.activity_article_collection);
-
-                findViewById(R.id.pager_title_strip).setVisibility(
-                        articleCollectionPagerAdapter.getCount() == 1 ? ViewGroup.GONE : ViewGroup.VISIBLE);
-
-                viewPager = (ViewPager) findViewById(R.id.pager);
-                viewPager.setAdapter(articleCollectionPagerAdapter);
-                viewPager.setOnPageChangeListener(new OnPageChangeListener() {
-
-                    @Override
-                    public void onPageScrollStateChanged(int arg0) {
-                    }
-
-                    @Override
-                    public void onPageScrolled(int arg0, float arg1, int arg2) {
-                    }
-
-                    @Override
-                    public void onPageSelected(final int position) {
-                        updateTitle(position);
-                        runOnUiThread(() -> {
-                            ArticleFragment fragment = (ArticleFragment) articleCollectionPagerAdapter.getItem(position);
-                            fragment.applyTextZoomPref();
-                        });
-
-                    }
-                });
-                viewPager.setCurrentItem(position);
-
-                PagerTitleStrip titleStrip = (PagerTitleStrip) findViewById(R.id.pager_title_strip);
-                titleStrip.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
+            @Override
+            public void onPageSelected(final int position) {
                 updateTitle(position);
-                articleCollectionPagerAdapter.registerDataSetObserver(new DataSetObserver() {
-                    @Override
-                    public void onChanged() {
-                        if (articleCollectionPagerAdapter.getCount() == 0) {
-                            finish();
-                        }
-                    }
+                runOnUiThread(() -> {
+                    ArticleFragment fragment = (ArticleFragment)
+                            articleCollectionPagerAdapter.getItem(position);
+                    fragment.applyTextZoomPref();
                 });
+
             }
-        };
+        });
+        viewPager.setCurrentItem(position);
 
-        createAdapterTask.execute();
-
+        PagerTitleStrip titleStrip = findViewById(R.id.pager_title_strip);
+        titleStrip.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
+        updateTitle(position);
+        articleCollectionPagerAdapter.registerDataSetObserver(new DataSetObserver() {
+            @Override
+            public void onChanged() {
+                if (articleCollectionPagerAdapter.getCount() == 0) {
+                    finish();
+                }
+            }
+        });
     }
 
     private ArticleCollectionPagerAdapter createFromUri(Application app, Uri articleUrl) {
         String host = articleUrl.getHost();
-        if (!(host.equals("localhost") || host.matches("127.\\d{1,3}.\\d{1,3}.\\d{1,3}"))) {
+        if (!(host.equals("localhost") || host.matches("127\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}"))) {
             return createFromIntent(app, getIntent());
         }
         BlobDescriptor bd = BlobDescriptor.fromUri(articleUrl);
@@ -207,23 +198,30 @@ public class ArticleCollectionActivity extends AppCompatActivity
         BlobListAdapter data = new BlobListAdapter(this, 20, 1);
         data.setData(result);
         boolean hasFragment = !Util.isBlank(bd.fragment);
-        return new ArticleCollectionPagerAdapter(
-                app, data, hasFragment ? new ToBlobWithFragment(bd.fragment) : blobToBlob, getSupportFragmentManager());
+        return new ArticleCollectionPagerAdapter(app, data,
+                hasFragment ? new ToBlobWithFragment(bd.fragment) : blobToBlob,
+                getSupportFragmentManager());
     }
 
     private ArticleCollectionPagerAdapter createFromLastResult(Application app) {
-        return new ArticleCollectionPagerAdapter(
-                app, app.lastResult, blobToBlob, getSupportFragmentManager());
+        return new ArticleCollectionPagerAdapter(app,
+                app.lastResult,
+                blobToBlob,
+                getSupportFragmentManager());
     }
 
     private ArticleCollectionPagerAdapter createFromBookmarks(final Application app) {
-        return new ArticleCollectionPagerAdapter(
-                app, new BlobDescriptorListAdapter(app.bookmarks), item -> app.bookmarks.resolve((BlobDescriptor) item), getSupportFragmentManager());
+        return new ArticleCollectionPagerAdapter(app,
+                new BlobDescriptorListAdapter(app.bookmarks),
+                item -> app.bookmarks.resolve((BlobDescriptor) item),
+                getSupportFragmentManager());
     }
 
     private ArticleCollectionPagerAdapter createFromHistory(final Application app) {
-        return new ArticleCollectionPagerAdapter(
-                app, new BlobDescriptorListAdapter(app.history), item -> app.history.resolve((BlobDescriptor) item), getSupportFragmentManager());
+        return new ArticleCollectionPagerAdapter(app,
+                new BlobDescriptorListAdapter(app.history),
+                item -> app.history.resolve((BlobDescriptor) item),
+                getSupportFragmentManager());
     }
 
     private ArticleCollectionPagerAdapter createFromIntent(Application app, Intent intent) {
@@ -266,10 +264,6 @@ public class ArticleCollectionActivity extends AppCompatActivity
         }
         return new ArticleCollectionPagerAdapter(
                 app, data, blobToBlob, getSupportFragmentManager());
-    }
-
-    private Iterator<Blob> stemLookup(Application app, String lookupKey) {
-        return this.stemLookup(app, lookupKey, null);
     }
 
     private Iterator<Blob> stemLookup(Application app, String lookupKey, String preferredSlobId) {
@@ -554,7 +548,7 @@ public class ArticleCollectionActivity extends AppCompatActivity
         }
 
         @Override
-        public void setPrimaryItem(ViewGroup container, int position, Object object) {
+        public void setPrimaryItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
             super.setPrimaryItem(container, position, object);
             this.primaryItem = (ArticleFragment) object;
         }
@@ -604,7 +598,7 @@ public class ArticleCollectionActivity extends AppCompatActivity
         //if underlying data changes (such as on unbookmark)
         //https://code.google.com/p/android/issues/detail?id=19001
         @Override
-        public int getItemPosition(Object object) {
+        public int getItemPosition(@NonNull Object object) {
             return POSITION_NONE;
         }
     }

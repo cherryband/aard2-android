@@ -1,4 +1,4 @@
-<android.support.v7.widget.SearchView
+<androidx.appcompat.widget.SearchView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/fldFilter"
     android:layout_width="match_parent"

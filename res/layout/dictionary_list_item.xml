@@ -213,7 +213,7 @@
                 android:paddingBottom="4dp"
                 android:paddingLeft="16dp" />
 
-            <android.support.v4.widget.Space
+            <androidx.legacy.widget.Space
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
