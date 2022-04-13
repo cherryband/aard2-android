@@ -75,7 +75,7 @@ public class ArticleFragment extends Fragment {
             return true;
         }
         if (itemId == R.id.action_bookmark_article) {
-            Application app = (Application) getActivity().getApplication();
+            AriApplication app = (AriApplication) getActivity().getApplication();
             if (this.url != null) {
                 if (item.isChecked()) {
                     app.removeBookmark(this.url);
@@ -177,7 +177,7 @@ public class ArticleFragment extends Fragment {
         if (this.url == null) {
             miBookmark.setVisible(false);
         } else {
-            Application app = (Application) getActivity().getApplication();
+            AriApplication app = (AriApplication) getActivity().getApplication();
             try {
                 boolean bookmarked = app.isBookmarked(this.url);
                 displayBookmarked(bookmarked);

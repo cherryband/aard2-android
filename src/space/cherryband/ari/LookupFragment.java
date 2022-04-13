@@ -1,9 +1,12 @@
 package space.cherryband.ari;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import androidx.core.view.MenuItemCompat;
 import androidx.appcompat.widget.SearchView;
+import androidx.fragment.app.FragmentActivity;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -11,15 +14,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import itkach.slob.Slob;
 
 public class LookupFragment extends BaseListFragment implements LookupListener {
 
     private Timer timer;
     private SearchView searchView;
-    private Application app;
+    private AriApplication app;
     private SearchView.OnQueryTextListener queryTextListener;
     private SearchView.OnCloseListener closeListener;
     private MenuItemCompat.OnActionExpandListener openListener;
@@ -39,7 +47,7 @@ public class LookupFragment extends BaseListFragment implements LookupListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        app = (Application) getActivity().getApplication();
+        app = (AriApplication) getActivity().getApplication();
         app.addLookupListener(this);
     }
 
@@ -60,7 +68,7 @@ public class LookupFragment extends BaseListFragment implements LookupListener {
             intent.putExtra("position", position);
             startActivity(intent);
         });
-        final Application app = (Application) getActivity().getApplication();
+        final AriApplication app = (AriApplication) getActivity().getApplication();
         getListView().setAdapter(app.lastResult);
 
         closeListener = () -> true;
@@ -102,56 +110,61 @@ public class LookupFragment extends BaseListFragment implements LookupListener {
             }
         };
 
-        openListener = new MenuItemCompat.OnActionExpandListener(){
-
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem menuItem) {
-                View filterActionView = MenuItemCompat.getActionView(menuItem);
-                searchView = filterActionView.findViewById(R.id.fldLookup);
-                searchView.setQueryHint(menuItem.getTitle());
-                searchView.setIconified(false);
-                searchView.setOnQueryTextListener(queryTextListener);
-                searchView.setOnCloseListener(closeListener);
-                searchView.setSubmitButtonEnabled(false);
-                return true;
-            }
-
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem menuItem) {
-                return true;
-            }
-        };
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_random){
+            AriApplication app = (AriApplication) getActivity().getApplication();
+            Slob.Blob blob = app.random();
+            if (blob == null) {
+                Toast.makeText(getContext(),
+                        R.string.article_collection_nothing_found,
+                        Toast.LENGTH_SHORT).show();
+                return true;
+            }
+            Intent intent = new Intent(getActivity(), ArticleCollectionActivity.class);
+            intent.setData(Uri.parse(app.getUrl(blob)));
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         timer = new Timer();
         inflater.inflate(R.menu.lookup, menu);
-        MenuItem menuItem = menu.findItem(R.id.action_lookup);
-        MenuItemCompat.setOnActionExpandListener(menuItem, openListener);
+        MenuItem miFilter = menu.findItem(R.id.action_lookup);
+        View filterActionView = miFilter.getActionView();
+        searchView = (SearchView) filterActionView.findViewById(R.id.fldLookup);
+        searchView.setQueryHint(miFilter.getTitle());
+        searchView.setOnQueryTextListener(queryTextListener);
+        searchView.setOnCloseListener(closeListener);
+        searchView.setSubmitButtonEnabled(false);
     }
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
+        FragmentActivity activity = getActivity();
         super.onPrepareOptionsMenu(menu);
-        if (app.autoPaste()) {
-            CharSequence clipboard = Clipboard.take(this.getActivity());
+        if (app.getAutoPaste()) {
+            CharSequence clipboard = Clipboard.take(activity);
             if (clipboard != null) {
                 app.lookup(clipboard.toString(), false);
             }
         }
-        if (searchView != null) {
-            CharSequence query = app.getLookupQuery();
-            searchView.setQuery(query, true);
-            if (app.lastResult.getCount() > 0) {
-                searchView.clearFocus();
-            }
+        CharSequence query = app.getLookupQuery();
+        searchView.setQuery(query, true);
+        if (app.lastResult.getCount() > 0) {
+            searchView.clearFocus();
         }
+        MenuItem miRandomArticle = menu.findItem(R.id.action_random);
+        miRandomArticle.setIcon(IconMaker.actionBar(activity, IconMaker.IC_RELOAD));
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NotNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (searchView != null) {
             String query = searchView.getQuery().toString();
@@ -177,7 +190,7 @@ public class LookupFragment extends BaseListFragment implements LookupListener {
         if (timer != null) {
             timer.cancel();
         }
-        Application app = (Application) getActivity().getApplication();
+        AriApplication app = (AriApplication) getActivity().getApplication();
         app.removeLookupListener(this);
         super.onDestroy();
     }

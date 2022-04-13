@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.FragmentActivity;
 import androidx.core.view.MenuItemCompat;
 import androidx.appcompat.app.AlertDialog;
@@ -157,7 +159,7 @@ abstract class BlobDescriptorListFragment extends BaseListFragment {
         miFilter.setIcon(icFilter);
 
         View filterActionView = MenuItemCompat.getActionView(miFilter);
-        /*SearchView searchView = (SearchView) filterActionView
+        SearchView searchView = (SearchView) filterActionView
                 .findViewById(R.id.fldFilter);
         searchView.setQueryHint(miFilter.getTitle());
         searchView.setQuery(list.getFilter(), true);
@@ -175,7 +177,7 @@ abstract class BlobDescriptorListFragment extends BaseListFragment {
                 }
                 return true;
             }
-        });*/
+        });
         setSortOrder(menu.findItem(R.id.action_sort_order), list.getSortOrder());
         setAscending(menu.findItem(R.id.action_sort_asc), list.isAscending());
 

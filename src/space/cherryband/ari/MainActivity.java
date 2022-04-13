@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final Application app = (Application) getApplication();
+        final AriApplication app = (AriApplication) getApplication();
         app.installTheme(this);
         setContentView(R.layout.activity_main);
 
@@ -137,33 +137,16 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            Application app = (Application) getApplication();
-            Slob.Blob blob = app.random();
-            if (blob == null) {
-                Toast.makeText(this,
-                        R.string.article_collection_nothing_found,
-                        Toast.LENGTH_SHORT).show();
-                return true;
-            }
-            Intent intent = new Intent(this,
-                    ArticleCollectionActivity.class);
-            intent.setData(Uri.parse(app.getUrl(blob)));
-            startActivity(intent);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     protected void onPause() {
         //Looks like shown soft input sometimes causes a system ui visibility
         //change event that breaks article activity launched from here out of full screen mode.
         //Hiding it appears to reduce that.
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         try {
-            inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+            final View focus = getCurrentFocus();
+            if (focus != null) {
+                inputMethodManager.hideSoftInputFromWindow(focus.getWindowToken(), 0);
+            }
         } catch (Exception e) {
             Log.w(TAG, "Hiding soft input failed", e);
         }
@@ -195,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements
 
         @Override
         BlobDescriptorList getDescriptorList() {
-            Application app = (Application) getActivity().getApplication();
+            AriApplication app = (AriApplication) getActivity().getApplication();
             return app.bookmarks;
         }
 
@@ -228,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements
 
         @Override
         BlobDescriptorList getDescriptorList() {
-            Application app = (Application) getActivity()
+            AriApplication app = (AriApplication) getActivity()
                     .getApplication();
             return app.history;
         }
@@ -308,13 +291,13 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private boolean useVolumeForNav() {
-        Application app = (Application) getApplication();
-        return app.useVolumeForNav();
+        AriApplication app = (AriApplication) getApplication();
+        return app.getUseVolumeForNav();
     }
 
     private boolean autoPaste() {
-        Application app = (Application) getApplication();
-        return app.autoPaste();
+        AriApplication app = (AriApplication) getApplication();
+        return app.getAutoPaste();
     }
 
     @Override

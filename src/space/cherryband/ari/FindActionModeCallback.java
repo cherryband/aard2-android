@@ -6,7 +6,6 @@
 package space.cherryband.ari;
 
 import android.content.Context;
-import android.os.Build;
 import android.text.Editable;
 import android.text.Selection;
 import android.text.Spannable;

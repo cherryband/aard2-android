@@ -34,7 +34,7 @@ public class SettingsListAdapter extends BaseAdapter implements SharedPreference
 
     private final static String TAG = SettingsListAdapter.class.getSimpleName();
     private final FragmentActivity context;
-    private final Application app;
+    private final AriApplication app;
 
     private List<String> userStyleNames;
     private Map<String, ?> userStyleData;
@@ -55,7 +55,7 @@ public class SettingsListAdapter extends BaseAdapter implements SharedPreference
     SettingsListAdapter(Fragment fragment) {
         this.fragment = fragment;
         this.context = fragment.getActivity();
-        this.app = (Application) this.context.getApplication();
+        this.app = (AriApplication) this.context.getApplication();
         this.userStylePrefs = context.getSharedPreferences(
                 "userStyles", AppCompatActivity.MODE_PRIVATE);
         this.userStylePrefs.registerOnSharedPreferenceChangeListener(this);
@@ -126,23 +126,23 @@ public class SettingsListAdapter extends BaseAdapter implements SharedPreference
 
             final SharedPreferences prefs = app.prefs();
 
-            String currentValue = prefs.getString(Application.PREF_UI_THEME,
-                    Application.PREF_UI_THEME_SYSTEM);
-            Log.d("Settings", Application.PREF_UI_THEME + " current value: " + currentValue);
+            String currentValue = prefs.getString(AriApplication.PREF_UI_THEME,
+                    AriApplication.PREF_UI_THEME_SYSTEM);
+            Log.d("Settings", AriApplication.PREF_UI_THEME + " current value: " + currentValue);
 
             View.OnClickListener clickListener = view1 -> {
                 SharedPreferences.Editor editor = prefs.edit();
                 String value;
                 int id = view1.getId();
                 if (id == R.id.setting_ui_theme_light) {
-                    value = Application.PREF_UI_THEME_LIGHT;
+                    value = AriApplication.PREF_UI_THEME_LIGHT;
                 } else if (id == R.id.setting_ui_theme_dark) {
-                    value = Application.PREF_UI_THEME_DARK;
+                    value = AriApplication.PREF_UI_THEME_DARK;
                 } else {
-                    value = Application.PREF_UI_THEME_SYSTEM;
+                    value = AriApplication.PREF_UI_THEME_SYSTEM;
                 }
-                Log.d("Settings", Application.PREF_UI_THEME + ": " + value);
-                editor.putString(Application.PREF_UI_THEME, value);
+                Log.d("Settings", AriApplication.PREF_UI_THEME + ": " + value);
+                editor.putString(AriApplication.PREF_UI_THEME, value);
                 editor.apply();
                 context.recreate();
             };
@@ -155,9 +155,9 @@ public class SettingsListAdapter extends BaseAdapter implements SharedPreference
             btnLight.setOnClickListener(clickListener);
             btnDark.setOnClickListener(clickListener);
             btnSystem.setOnClickListener(clickListener);
-            btnLight.setChecked(currentValue.equals(Application.PREF_UI_THEME_LIGHT));
-            btnDark.setChecked(currentValue.equals(Application.PREF_UI_THEME_DARK));
-            btnSystem.setChecked(currentValue.equals(Application.PREF_UI_THEME_SYSTEM));
+            btnLight.setChecked(currentValue.equals(AriApplication.PREF_UI_THEME_LIGHT));
+            btnDark.setChecked(currentValue.equals(AriApplication.PREF_UI_THEME_DARK));
+            btnSystem.setChecked(currentValue.equals(AriApplication.PREF_UI_THEME_SYSTEM));
         }
         return view;
     }
@@ -166,7 +166,7 @@ public class SettingsListAdapter extends BaseAdapter implements SharedPreference
         View view;
         LayoutInflater inflater = (LayoutInflater) parent.getContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        final Application app = (Application) context.getApplication();
+        final AriApplication app = (AriApplication) context.getApplication();
         if (convertView != null) {
             view = convertView;
         } else {
@@ -190,7 +190,7 @@ public class SettingsListAdapter extends BaseAdapter implements SharedPreference
         View view;
         LayoutInflater inflater = (LayoutInflater) parent.getContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        final Application app = (Application) context.getApplication();
+        final AriApplication app = (AriApplication) context.getApplication();
         if (convertView != null) {
             view = convertView;
         } else {
@@ -198,13 +198,13 @@ public class SettingsListAdapter extends BaseAdapter implements SharedPreference
                     false);
             final CheckBox toggle = view.findViewById(R.id.setting_use_volume_for_nav);
             toggle.setOnClickListener(v -> {
-                boolean currentValue = app.useVolumeForNav();
+                boolean currentValue = app.getUseVolumeForNav();
                 boolean newValue = !currentValue;
                 app.setUseVolumeForNav(newValue);
                 toggle.setChecked(newValue);
             });
         }
-        boolean currentValue = app.useVolumeForNav();
+        boolean currentValue = app.getUseVolumeForNav();
         CheckBox toggle = view.findViewById(R.id.setting_use_volume_for_nav);
         toggle.setChecked(currentValue);
         return view;
@@ -214,7 +214,7 @@ public class SettingsListAdapter extends BaseAdapter implements SharedPreference
         View view;
         LayoutInflater inflater = (LayoutInflater) parent.getContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        final Application app = (Application) context.getApplication();
+        final AriApplication app = (AriApplication) context.getApplication();
         if (convertView != null) {
             view = convertView;
         } else {
@@ -222,13 +222,13 @@ public class SettingsListAdapter extends BaseAdapter implements SharedPreference
                     false);
             final CheckBox toggle = view.findViewById(R.id.setting_auto_paste);
             toggle.setOnClickListener(v -> {
-                boolean currentValue = app.autoPaste();
+                boolean currentValue = app.getAutoPaste();
                 boolean newValue = !currentValue;
                 app.setAutoPaste(newValue);
                 toggle.setChecked(newValue);
             });
         }
-        boolean currentValue = app.autoPaste();
+        boolean currentValue = app.getAutoPaste();
         CheckBox toggle = view.findViewById(R.id.setting_auto_paste);
         toggle.setChecked(currentValue);
         return view;

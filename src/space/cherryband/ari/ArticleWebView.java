@@ -34,7 +34,7 @@ import java.util.TreeSet;
 
 public class ArticleWebView extends SearchableWebView {
 
-    public static final String LOCALHOST = Application.LOCALHOST;
+    public static final String LOCALHOST = AriApplication.LOCALHOST;
     private final String styleSwitcherJs;
     private final String defaultStyleTitle;
     private final String autoStyleTitle;
@@ -109,7 +109,7 @@ public class ArticleWebView extends SearchableWebView {
         connectivityManager = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        styleSwitcherJs = Application.jsStyleSwitcher;
+        styleSwitcherJs = AriApplication.jsStyleSwitcher;
 
         WebSettings settings = this.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -314,9 +314,9 @@ public class ArticleWebView extends SearchableWebView {
     }
 
     private boolean isUIDark() {
-        Application app = getApplication();
+        AriApplication app = getApplication();
         String uiTheme = app.getPreferredTheme();
-        return uiTheme.equals(Application.PREF_UI_THEME_DARK);
+        return uiTheme.equals(AriApplication.PREF_UI_THEME_DARK);
     }
 
     private String getAutoStyle() {
@@ -340,10 +340,10 @@ public class ArticleWebView extends SearchableWebView {
             String css = prefs.getString(styleTitle, "");
             String elementId = getCurrentSlobId();
             js = String.format(
-                    "javascript:" + Application.jsUserStyle, elementId, css);
+                    "javascript:" + AriApplication.jsUserStyle, elementId, css);
         } else {
             js = String.format(
-                    "javascript:" + Application.jsClearUserStyle + Application.jsSetCannedStyle,
+                    "javascript:" + AriApplication.jsClearUserStyle + AriApplication.jsSetCannedStyle,
                     getCurrentSlobId(), styleTitle);
         }
         if (Log.isLoggable(TAG, Log.DEBUG)) {
@@ -517,8 +517,8 @@ public class ArticleWebView extends SearchableWebView {
         setBackgroundColor(color);
     }
 
-    private Application getApplication() {
-        return (Application) ((AppCompatActivity) getContext()).getApplication();
+    private AriApplication getApplication() {
+        return (AriApplication) ((AppCompatActivity) getContext()).getApplication();
     }
 
     private void setCurrentSlobIdFromUrl(String url) {

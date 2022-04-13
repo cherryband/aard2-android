@@ -63,8 +63,8 @@ public class SettingsFragment extends ListFragment {
                 InputStream is = getActivity().getContentResolver().openInputStream(dataUri);
                 DocumentFile documentFile = DocumentFile.fromSingleUri(getContext(), dataUri);
                 String fileName = documentFile.getName();
-                Application app = (Application) getActivity().getApplication();
-                String userCss = Application.readTextFile(is, 256 * 1024);
+                AriApplication app = (AriApplication) getActivity().getApplication();
+                String userCss = AriApplication.readTextFile(is, 256 * 1024);
                 List<String> pathSegments = dataUri.getPathSegments();
                 Log.d(TAG, fileName);
                 Log.d(TAG, userCss);
@@ -87,7 +87,7 @@ public class SettingsFragment extends ListFragment {
                     Toast.makeText(getActivity(), R.string.msg_failed_to_store_user_style,
                             Toast.LENGTH_LONG).show();
                 }
-            } catch (Application.FileTooBigException e) {
+            } catch (AriApplication.FileTooBigException e) {
                 Log.d(TAG, "File is too big: " + dataUri);
                 Toast.makeText(getActivity(), R.string.msg_file_too_big,
                         Toast.LENGTH_LONG).show();

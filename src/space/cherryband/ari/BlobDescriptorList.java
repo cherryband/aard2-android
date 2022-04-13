@@ -30,7 +30,7 @@ final class BlobDescriptorList extends AbstractList<BlobDescriptor> {
         TIME, NAME
     }
 
-    private final Application app;
+    private final AriApplication app;
 
     private final DescriptorStore<BlobDescriptor> store;
     private final List<BlobDescriptor> list;
@@ -50,11 +50,11 @@ final class BlobDescriptorList extends AbstractList<BlobDescriptor> {
     private final RuleBasedCollator filterCollator;
     private final Handler handler;
 
-    BlobDescriptorList(Application app, DescriptorStore<BlobDescriptor> store) {
+    BlobDescriptorList(AriApplication app, DescriptorStore<BlobDescriptor> store) {
         this(app, store, 100);
     }
 
-    BlobDescriptorList(Application app, DescriptorStore<BlobDescriptor> store, int maxSize) {
+    BlobDescriptorList(AriApplication app, DescriptorStore<BlobDescriptor> store, int maxSize) {
         this.app = app;
         this.store = store;
         this.maxSize = maxSize;

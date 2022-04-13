@@ -3,6 +3,10 @@
     <item
         android:id="@+id/action_lookup"
         android:title="@string/action_lookup"
-        android:actionLayout="@layout/action_lookup"
+        app:actionLayout="@layout/action_lookup"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_random"
+        android:title="@string/action_random"
+        app:showAsAction="ifRoom" />
 </menu>

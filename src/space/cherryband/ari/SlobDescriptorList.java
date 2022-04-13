@@ -6,10 +6,10 @@ import itkach.slob.Slob;
 
 public class SlobDescriptorList extends BaseDescriptorList<SlobDescriptor> {
 
-    private final Application app;
+    private final AriApplication app;
     private final Comparator<SlobDescriptor> comparator;
 
-    SlobDescriptorList(Application app, DescriptorStore<SlobDescriptor> store) {
+    SlobDescriptorList(AriApplication app, DescriptorStore<SlobDescriptor> store) {
         super(SlobDescriptor.class, store);
         this.app = app;
         comparator = (d1, d2) -> {

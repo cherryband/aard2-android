@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.core.os.HandlerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -21,15 +20,12 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
 
@@ -76,7 +72,7 @@ public class ArticleCollectionActivity extends AppCompatActivity
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final Application app = (Application) getApplication();
+        final AriApplication app = (AriApplication) getApplication();
         app.installTheme(this);
         Objects.requireNonNull(getSupportActionBar()).hide();
         setContentView(R.layout.activity_article_collection_loading);
@@ -105,9 +101,9 @@ public class ArticleCollectionActivity extends AppCompatActivity
                         result = createFromIntent(app, intent);
                     }
                 }
-                doWithAdapter(result, position);
+                runOnUiThread(() -> doWithAdapter(result, position));
             } catch (Exception e) {
-                toastAndQuit(e.getLocalizedMessage());
+                runOnUiThread(() -> toastAndQuit(e.getLocalizedMessage()));
             }
         }).start();
 
@@ -185,7 +181,7 @@ public class ArticleCollectionActivity extends AppCompatActivity
         });
     }
 
-    private ArticleCollectionPagerAdapter createFromUri(Application app, Uri articleUrl) {
+    private ArticleCollectionPagerAdapter createFromUri(AriApplication app, Uri articleUrl) {
         String host = articleUrl.getHost();
         if (!(host.equals("localhost") || host.matches("127\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}"))) {
             return createFromIntent(app, getIntent());
@@ -203,28 +199,28 @@ public class ArticleCollectionActivity extends AppCompatActivity
                 getSupportFragmentManager());
     }
 
-    private ArticleCollectionPagerAdapter createFromLastResult(Application app) {
+    private ArticleCollectionPagerAdapter createFromLastResult(AriApplication app) {
         return new ArticleCollectionPagerAdapter(app,
                 app.lastResult,
                 blobToBlob,
                 getSupportFragmentManager());
     }
 
-    private ArticleCollectionPagerAdapter createFromBookmarks(final Application app) {
+    private ArticleCollectionPagerAdapter createFromBookmarks(final AriApplication app) {
         return new ArticleCollectionPagerAdapter(app,
                 new BlobDescriptorListAdapter(app.bookmarks),
                 item -> app.bookmarks.resolve((BlobDescriptor) item),
                 getSupportFragmentManager());
     }
 
-    private ArticleCollectionPagerAdapter createFromHistory(final Application app) {
+    private ArticleCollectionPagerAdapter createFromHistory(final AriApplication app) {
         return new ArticleCollectionPagerAdapter(app,
                 new BlobDescriptorListAdapter(app.history),
                 item -> app.history.resolve((BlobDescriptor) item),
                 getSupportFragmentManager());
     }
 
-    private ArticleCollectionPagerAdapter createFromIntent(Application app, Intent intent) {
+    private ArticleCollectionPagerAdapter createFromIntent(AriApplication app, Intent intent) {
         String lookupKey = intent.getStringExtra(Intent.EXTRA_TEXT);
         if (intent.getAction().equals(Intent.ACTION_PROCESS_TEXT)) {
             lookupKey = getIntent()
@@ -266,7 +262,7 @@ public class ArticleCollectionActivity extends AppCompatActivity
                 app, data, blobToBlob, getSupportFragmentManager());
     }
 
-    private Iterator<Blob> stemLookup(Application app, String lookupKey, String preferredSlobId) {
+    private Iterator<Blob> stemLookup(AriApplication app, String lookupKey, String preferredSlobId) {
         Slob.PeekableIterator<Blob> result;
         final int length = lookupKey.length();
         String currentLookupKey = lookupKey;
@@ -296,7 +292,7 @@ public class ArticleCollectionActivity extends AppCompatActivity
         if (blob != null) {
             String dictLabel = blob.owner.getTags().get("label");
             Objects.requireNonNull(actionBar).setTitle(dictLabel);
-            Application app = (Application) getApplication();
+            AriApplication app = (AriApplication) getApplication();
             app.history.add(app.getUrl(blob));
         } else {
             Objects.requireNonNull(actionBar).setTitle("???");
@@ -382,7 +378,7 @@ public class ArticleCollectionActivity extends AppCompatActivity
         if (articleCollectionPagerAdapter != null) {
             articleCollectionPagerAdapter.destroy();
         }
-        Application app = (Application) getApplication();
+        AriApplication app = (AriApplication) getApplication();
         app.pop(this);
         super.onDestroy();
     }
@@ -421,8 +417,8 @@ public class ArticleCollectionActivity extends AppCompatActivity
     }
 
     private boolean isVolumeForNavDisabled() {
-        Application app = (Application) getApplication();
-        return !app.useVolumeForNav();
+        AriApplication app = (AriApplication) getApplication();
+        return !app.getUseVolumeForNav();
     }
 
 
@@ -518,14 +514,14 @@ public class ArticleCollectionActivity extends AppCompatActivity
 
     public static class ArticleCollectionPagerAdapter extends FragmentStatePagerAdapter {
 
-        private Application app;
+        private AriApplication app;
         private final DataSetObserver observer;
         private BaseAdapter data;
         private final ToBlob toBlob;
         private int count;
         private ArticleFragment primaryItem;
 
-        public ArticleCollectionPagerAdapter(Application app, BaseAdapter data, ToBlob toBlob, FragmentManager fm) {
+        public ArticleCollectionPagerAdapter(AriApplication app, BaseAdapter data, ToBlob toBlob, FragmentManager fm) {
             super(fm);
             this.app = app;
             this.data = data;

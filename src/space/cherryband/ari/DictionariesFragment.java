@@ -46,7 +46,7 @@ public class DictionariesFragment extends BaseListFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        final Application app = (Application) getActivity().getApplication();
+        final AriApplication app = (AriApplication) getActivity().getApplication();
         listAdapter = new DictionaryListAdapter(app.dictionaries, getActivity());
         setListAdapter(listAdapter);
     }
@@ -118,7 +118,7 @@ public class DictionariesFragment extends BaseListFragment {
         Log.d(TAG, String.format("req code %s, result code: %s, data: %s", requestCode, resultCode, dataUri));
 
         if (resultCode == Activity.RESULT_OK && intent != null) {
-            final Application app = ((Application) getActivity().getApplication());
+            final AriApplication app = ((AriApplication) getActivity().getApplication());
             List<Uri> selection = new ArrayList<>();
             if (dataUri != null) {
                 selection.add(dataUri);
