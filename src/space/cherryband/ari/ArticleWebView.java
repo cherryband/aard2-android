@@ -3,6 +3,7 @@ package space.cherryband.ari;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -316,7 +317,13 @@ public class ArticleWebView extends SearchableWebView {
     private boolean isUIDark() {
         AriApplication app = getApplication();
         String uiTheme = app.getPreferredTheme();
-        return uiTheme.equals(AriApplication.PREF_UI_THEME_DARK);
+        if (Objects.equals(uiTheme, AriApplication.PREF_UI_THEME_DARK)){
+            return true;
+        } if (Objects.equals(uiTheme, AriApplication.PREF_UI_THEME_SYSTEM)){
+            return (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) ==
+                    Configuration.UI_MODE_NIGHT_YES;
+        }
+        return false;
     }
 
     private String getAutoStyle() {

@@ -1,5 +1,6 @@
 package space.cherryband.ari
 
+import android.app.Activity
 import android.app.Application
 import android.content.ComponentName
 import android.content.SharedPreferences
@@ -31,9 +32,7 @@ import kotlin.random.Random
 class AriApplication : Application() {
     private val appScope = MainScope()
     private var slobber: Slobber? = null
-    @JvmField
     internal var bookmarks: BlobDescriptorList? = null
-    @JvmField
     internal var history: BlobDescriptorList? = null
     @JvmField
     var dictionaries: SlobDescriptorList? = null
@@ -412,5 +411,6 @@ class AriApplication : Application() {
             reader.close()
             return sw.toString()
         }
+        fun getApp(activity: Activity?): AriApplication = activity?.application as AriApplication
     }
 }
