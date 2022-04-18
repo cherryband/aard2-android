@@ -140,6 +140,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         super.onPause()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         val currentItem = viewPager.currentItem
 
