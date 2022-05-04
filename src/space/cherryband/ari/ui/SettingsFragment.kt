@@ -3,20 +3,16 @@ package space.cherryband.ari.ui
 import androidx.preference.PreferenceFragmentCompat
 import android.os.Bundle
 import space.cherryband.ari.R
-import android.content.DialogInterface
-import space.cherryband.ari.ui.IconMaker
+import space.cherryband.ari.util.IconMaker
 import android.widget.TextView
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.pm.PackageInfo
 import android.net.Uri
 import android.text.Html
-import android.view.View
 import android.webkit.WebView
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.Preference
-import space.cherryband.ari.ui.SettingsFragment
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private var clearCacheConfirmationDialog: AlertDialog? = null

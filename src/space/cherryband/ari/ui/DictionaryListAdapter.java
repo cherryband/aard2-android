@@ -27,6 +27,7 @@ import java.util.Locale;
 import space.cherryband.ari.R;
 import space.cherryband.ari.data.SlobDescriptor;
 import space.cherryband.ari.data.SlobDescriptorList;
+import space.cherryband.ari.util.IconMaker;
 import space.cherryband.ari.util.Util;
 
 public class DictionaryListAdapter extends BaseAdapter {

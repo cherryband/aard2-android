@@ -9,6 +9,7 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.ListFragment
 import space.cherryband.ari.R
+import space.cherryband.ari.util.IconMaker
 
 abstract class BaseListFragment : ListFragment() {
     protected lateinit var emptyView: View

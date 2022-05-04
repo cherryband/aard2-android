@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import space.cherryband.ari.*
 import space.cherryband.ari.util.Clipboard
+import space.cherryband.ari.util.IconMaker
 import java.util.*
 
 class LookupFragment : BaseListFragment(),

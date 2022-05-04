@@ -21,6 +21,7 @@ import com.google.android.material.navigation.NavigationBarView
 import space.cherryband.ari.*
 import space.cherryband.ari.data.BlobDescriptorList
 import space.cherryband.ari.util.Clipboard
+import space.cherryband.ari.util.IconMaker
 
 class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener{
     private lateinit var appPageAdapter: AppPageAdapter

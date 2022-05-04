@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import space.cherryband.ari.AriApplication;
 import space.cherryband.ari.R;
+import space.cherryband.ari.util.IconMaker;
 
 
 public class ArticleFragment extends Fragment {

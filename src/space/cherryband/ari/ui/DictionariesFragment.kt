@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import space.cherryband.ari.AriApplication
 import space.cherryband.ari.R
+import space.cherryband.ari.util.IconMaker
 
 class DictionariesFragment : BaseListFragment() {
     private var listAdapter: DictionaryListAdapter? = null

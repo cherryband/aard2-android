@@ -6,13 +6,13 @@ import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.*
-import android.widget.AdapterView
 import android.widget.AdapterView.OnItemClickListener
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import space.cherryband.ari.data.BlobDescriptorList
 import space.cherryband.ari.R
+import space.cherryband.ari.util.IconMaker
 
 internal abstract class BlobDescriptorListFragment : BaseListFragment() {
     private var icFilter: Drawable? = null
