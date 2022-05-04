@@ -13,6 +13,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,7 +37,7 @@ public class BlobListAdapter extends BaseAdapter {
 
 
     public BlobListAdapter(Context context) {
-        this(context, 20, 5);
+        this(context, 20, 10);
     }
 
     public BlobListAdapter(Context context, int chunkSize, int loadMoreThreashold) {
@@ -48,37 +49,37 @@ public class BlobListAdapter extends BaseAdapter {
     }
 
     public void setData(Iterator<Slob.Blob> lookupResultsIter) {
-        synchronized (list) {
-            list.clear();
-        }
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                list.clear();
+                notifyDataSetChanged();
+            }
+        });
         this.iter = lookupResultsIter;
         loadChunkSync();
-    }
-
-    public void setData(List<Slob.Blob> data) {
-        synchronized (list) {
-            list.clear();
-            list.addAll(data);
-            this.iter = emptyIter;
-        }
     }
 
     private void loadChunkSync() {
         long t0 = System.currentTimeMillis();
         int count = 0;
-        synchronized (list) {
-            while (iter.hasNext() && count < chunkSize
-                    && list.size() <= MAX_SIZE) {
-                count++;
-                Slob.Blob b = iter.next();
-                list.add(b);
+        final List<Slob.Blob> chunkList = new LinkedList<>();
+
+        while (iter.hasNext() && count < chunkSize
+                && list.size() <= MAX_SIZE) {
+            count++;
+            Slob.Blob b = iter.next();
+            chunkList.add(b);
+        }
+
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                list.addAll(chunkList);
+                notifyDataSetChanged();
             }
-        }
-        if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
-            notifyDataSetChanged();
-        } else {
-            mainHandler.post(this::notifyDataSetChanged);
-        }
+        });
+
         Log.d(TAG,
                 String.format("Loaded chunk of %d (adapter size %d) in %d ms",
                         count, list.size(), (System.currentTimeMillis() - t0)));
@@ -93,17 +94,12 @@ public class BlobListAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        synchronized (list) {
-            return list.size();
-        }
+        return list.size();
     }
 
     @Override
     public Object getItem(int position) {
-        Object result;
-        synchronized (list) {
-            result = list.get(position);
-        }
+        Object result = list.get(position);
         maybeLoadMore(position);
         return result;
     }
@@ -114,10 +110,8 @@ public class BlobListAdapter extends BaseAdapter {
     }
 
     private void maybeLoadMore(int position) {
-        synchronized (list) {
-            if (position >= list.size() - loadMoreThreashold) {
-                loadChunk();
-            }
+        if (position >= list.size() - loadMoreThreashold) {
+            loadChunk();
         }
     }
 
