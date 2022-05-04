@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package space.cherryband.ari
 
 import android.app.Activity
@@ -10,6 +12,7 @@ import android.net.Uri
 import android.util.Log
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import itkach.slob.Slob
@@ -19,6 +22,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import space.cherryband.ari.data.*
+import space.cherryband.ari.ui.BlobListAdapter
+import space.cherryband.ari.ui.LookupListener
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -31,21 +37,23 @@ import kotlin.random.Random
 
 class AriApplication : Application() {
     private val appScope = MainScope()
-    private var slobber: Slobber? = null
-    internal var bookmarks: BlobDescriptorList? = null
-    internal var history: BlobDescriptorList? = null
-    @JvmField
-    var dictionaries: SlobDescriptorList? = null
-    private var port = -1
-    @JvmField
-    var lastResult: BlobListAdapter? = null
-    private var bookmarkStore: DescriptorStore<BlobDescriptor>? = null
-    private var historyStore: DescriptorStore<BlobDescriptor>? = null
-    private var dictStore: DescriptorStore<SlobDescriptor>? = null
-    private var mapper: ObjectMapper? = null
+    private val mapper = ObjectMapper()
+    private val slobber = Slobber()
+    
+    lateinit var dictionaries: SlobDescriptorList
+    lateinit var lastResult: BlobListAdapter
+    lateinit var bookmarks: BlobDescriptorList
+    lateinit var history: BlobDescriptorList
     var lookupQuery = ""
         private set
-    private var articleActivities: MutableList<AppCompatActivity>? = null
+
+    
+    private var port = -1
+    private lateinit var bookmarkStore: DescriptorStore<BlobDescriptor>
+    private lateinit var historyStore: DescriptorStore<BlobDescriptor>
+    private lateinit var dictStore: DescriptorStore<SlobDescriptor>
+    private lateinit var articleActivities: MutableList<AppCompatActivity>
+    
     override fun onCreate() {
         super.onCreate()
         try {
@@ -64,30 +72,27 @@ class AriApplication : Application() {
             e.printStackTrace()
         }
         articleActivities = Collections.synchronizedList(ArrayList())
-        mapper = ObjectMapper()
-        mapper!!.configure(
+        mapper.configure(
             DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
             false
         )
-        dictStore = DescriptorStore(mapper, getDir("dictionaries", MODE_PRIVATE))
+        dictStore = DescriptorStore(
+            mapper,
+            getDir("dictionaries", MODE_PRIVATE)
+        )
         bookmarkStore = DescriptorStore(
-            mapper, getDir(
-                "bookmarks", MODE_PRIVATE
-            )
+            mapper,
+            getDir("bookmarks", MODE_PRIVATE)
         )
         historyStore = DescriptorStore(
-            mapper, getDir(
-                "history", MODE_PRIVATE
-            )
+            mapper,
+            getDir("history", MODE_PRIVATE)
         )
-        slobber = Slobber()
         val t0 = System.currentTimeMillis()
         startWebServer()
         Log.d(
-            TAG, String.format(
-                "Started web server on port %d in %d ms",
-                port, System.currentTimeMillis() - t0
-            )
+            TAG, 
+            "Started web server on port $port in ${System.currentTimeMillis() - t0} ms"
         )
         try {
             var stream: InputStream? = Objects.requireNonNull(javaClass.classLoader)
@@ -104,38 +109,41 @@ class AriApplication : Application() {
         }
         val initialQuery = prefs().getString("query", "")
         lastResult = BlobListAdapter(this)
-        dictionaries = SlobDescriptorList(this, dictStore)
-        bookmarks = BlobDescriptorList(this, bookmarkStore)
-        history = BlobDescriptorList(this, historyStore)
-        dictionaries?.registerDataSetObserver(object : DataSetObserver() {
+        dictionaries =
+            SlobDescriptorList(this, dictStore)
+        bookmarks =
+            BlobDescriptorList(this, bookmarkStore)
+        history =
+            BlobDescriptorList(this, historyStore)
+        dictionaries.registerDataSetObserver(object : DataSetObserver() {
             @Synchronized
             override fun onChanged() {
-                lastResult?.setData(Collections.emptyIterator())
-                slobber?.setSlobs(null)
+                lastResult.setData(Collections.emptyIterator())
+                slobber.setSlobs(null)
                 val slobs: MutableList<Slob> = ArrayList()
-                for (sd in dictionaries!!) {
+                for (sd in dictionaries) {
                     val s = sd.load(applicationContext)
                     if (s != null) {
                         slobs.add(s)
                     }
                 }
-                slobber?.setSlobs(slobs)
+                slobber.setSlobs(slobs)
                 appScope.launch { enableLinkHandling(activeSlobs) }
                 lookup(lookupQuery)
-                bookmarks?.notifyDataSetChanged()
-                history?.notifyDataSetChanged()
+                bookmarks.notifyDataSetChanged()
+                history.notifyDataSetChanged()
             }
         })
-        dictionaries?.load()
+        dictionaries.load()
         lookup(initialQuery, false)
-        bookmarks?.load()
-        history?.load()
+        bookmarks.load()
+        history.load()
     }
 
     private fun startWebServer() {
         var portCandidate = PREFERRED_PORT
         try {
-            slobber?.start("127.0.0.1", portCandidate)
+            slobber.start("127.0.0.1", portCandidate)
             port = portCandidate
         } catch (e: IOException) {
             Log.w(TAG, "Failed to start on port $portCandidate", e)
@@ -151,7 +159,7 @@ class AriApplication : Application() {
                 seen.add(portCandidate)
                 var lastError: Exception?
                 try {
-                    slobber?.start("127.0.0.1", portCandidate)
+                    slobber.start("127.0.0.1", portCandidate)
                     port = portCandidate
                     break
                 } catch (e1: IOException) {
@@ -165,7 +173,7 @@ class AriApplication : Application() {
         }
     }
 
-    fun prefs(): SharedPreferences = getSharedPreferences(PREF, MODE_PRIVATE)
+    fun prefs(): SharedPreferences = getDefaultSharedPreferences(this)
 
     val preferredTheme: String?
         get() = prefs().getString(PREF_UI_THEME, PREF_UI_THEME_SYSTEM)
@@ -179,27 +187,27 @@ class AriApplication : Application() {
     }
 
     fun push(activity: AppCompatActivity) {
-        articleActivities!!.add(activity)
-        Log.d(TAG, "Activity added, stack size " + articleActivities!!.size)
-        if (articleActivities!!.size > 3) {
+        articleActivities.add(activity)
+        Log.d(TAG, "Activity added, stack size " + articleActivities.size)
+        if (articleActivities.size > 3) {
             Log.d(TAG, "Max stack size exceeded, finishing oldest activity")
-            articleActivities!![0].finish()
+            articleActivities[0].finish()
         }
     }
 
-    fun pop(activity: AppCompatActivity) = articleActivities!!.remove(activity)
+    fun pop(activity: AppCompatActivity) = articleActivities.remove(activity)
 
     val activeSlobs: Array<Slob>
-        get() = dictionaries!!.asSequence()
+        get() = dictionaries.asSequence()
             .filter { it.active }
-            .mapNotNull {slob -> slobber?.getSlob(slob.id) }
+            .mapNotNull {slob -> slobber.getSlob(slob.id) }
             .toList()
             .toTypedArray()
 
     private val favoriteSlobs: Array<Slob>
-        get() = dictionaries!!.asSequence()
+        get() = dictionaries.asSequence()
             .filter { it.active && it.priority > 0 }
-            .mapNotNull {slob -> slobber?.getSlob(slob.id) }
+            .mapNotNull {slob -> slobber.getSlob(slob.id) }
             .toList()
             .toTypedArray()
 
@@ -217,69 +225,75 @@ class AriApplication : Application() {
         upToStrength: Slob.Strength? = null
     ): PeekableIterator<Slob.Blob> {
         val t0 = System.currentTimeMillis()
-        val slobs = if (activeOnly) activeSlobs else slobber?.slobs
-        val result = Slob.find(key, slobs, slobber?.findSlob(preferredSlobId), upToStrength)
+        val slobs = if (activeOnly) activeSlobs else slobber.slobs
+        val result = Slob.find(key, slobs, slobber.findSlob(preferredSlobId), upToStrength)
         Log.d(TAG, String.format("find ran in %dms", System.currentTimeMillis() - t0))
         return result
     }
 
     var isOnlyFavDictsForRandomLookup: Boolean
         get() = prefs().getBoolean(PREF_RANDOM_FAV_LOOKUP, false)
-        set(value) = prefs().edit()
-                .putBoolean(PREF_RANDOM_FAV_LOOKUP, value)
-                .apply()
+        set(value) = setBooleanPref(PREF_RANDOM_FAV_LOOKUP, value)
 
     var useVolumeForNav: Boolean
         get() = prefs().getBoolean(PREF_USE_VOLUME_FOR_NAV, true)
-        set(value) = prefs().edit()
-            .putBoolean(PREF_USE_VOLUME_FOR_NAV, value)
-            .apply()
+        set(value) = setBooleanPref(PREF_USE_VOLUME_FOR_NAV, value)
 
     var autoPaste: Boolean
         get() = prefs().getBoolean(PREF_AUTO_PASTE, false)
-        set(value) = prefs().edit()
-            .putBoolean(PREF_AUTO_PASTE, value)
+        set(value) = setBooleanPref(PREF_AUTO_PASTE, value)
+
+    internal fun setBooleanPref(key: String, value: Boolean) =
+        prefs().edit()
+            .putBoolean(key, value)
+            .apply()
+
+    internal fun setStringPref(key: String, value: String) =
+        prefs().edit()
+            .putString(key, value)
             .apply()
 
     fun random(): Slob.Blob? {
         val slobs = if (isOnlyFavDictsForRandomLookup) favoriteSlobs else activeSlobs
-        return slobber?.findRandom(slobs)
+        return slobber.findRandom(slobs)
     }
 
-    fun getUrl(blob: Slob.Blob?) = "http://$LOCALHOST:$port${Slobber.mkContentURL(blob)}"
+    fun getUrl(blob: Slob.Blob?):String {
+        val base = "http://$LOCALHOST:$port"
+        if (blob != null) return base + Slobber.mkContentURL(blob)
+        return base
+    }
 
-    fun getSlob(slobId: String?) = slobber?.getSlob(slobId)
+    fun getSlob(slobId: String?): Slob? = slobber.getSlob(slobId)
 
     @Synchronized
     fun addDictionary(uri: Uri): Boolean {
         val newDesc = SlobDescriptor.fromUri(applicationContext, uri.toString())
         if (newDesc.id != null) {
-            for (d in dictionaries!!) {
+            for (d in dictionaries) {
                 if (d.id != null && d.id == newDesc.id) {
                     return true
                 }
             }
         }
-        dictionaries!!.add(newDesc)
+        dictionaries.add(newDesc)
         return false
     }
 
-    fun findSlob(slobOrUri: String?): Slob? = slobber?.findSlob(slobOrUri)
+    fun findSlob(slobOrUri: String?): Slob? = slobber.findSlob(slobOrUri)
 
-    fun getSlobURI(slobId: String?): String? = slobber?.getSlobURI(slobId)
+    fun getSlobURI(slobId: String?): String? = slobber.getSlobURI(slobId)
 
-    fun addBookmark(contentURL: String?): BlobDescriptor? = bookmarks!!.add(contentURL)
+    fun addBookmark(contentURL: String?): BlobDescriptor? = bookmarks.add(contentURL)
 
-    fun removeBookmark(contentURL: String?): BlobDescriptor? = bookmarks!!.remove(contentURL)
+    fun removeBookmark(contentURL: String?): BlobDescriptor? = bookmarks.remove(contentURL)
 
-    fun isBookmarked(contentURL: String?): Boolean = bookmarks!!.contains(contentURL)
+    fun isBookmarked(contentURL: String?): Boolean = bookmarks.contains(contentURL)
 
     private fun setLookupResult(query: String, data: Iterator<Slob.Blob>) {
-        lastResult!!.setData(data)
+        lastResult.setData(data)
         lookupQuery = query
-        val edit = prefs().edit()
-        edit.putString("query", query)
-        edit.apply()
+        setStringPref("query", query)
     }
 
     private var currentLookupTask: Job? = null
@@ -381,7 +395,6 @@ class AriApplication : Application() {
         var jsClearUserStyle: String? = null
         @JvmField
         var jsSetCannedStyle: String? = null
-        private const val PREF = "app"
         const val PREF_RANDOM_FAV_LOOKUP = "onlyFavDictsForRandomLookup"
         const val PREF_UI_THEME = "UITheme"
         const val PREF_UI_THEME_LIGHT = "light"

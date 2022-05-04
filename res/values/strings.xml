@@ -114,4 +114,7 @@
     <string name="find_previous">Previous</string>
     <string name="setting_ui_theme_system">System Default</string>
     <string name="action_random">Random</string>
+    <string name="setting_category_display">Display</string>
+    <string name="setting_category_behaviour">Behavior</string>
+    <string name="setting_group_system">System</string>
 </resources>

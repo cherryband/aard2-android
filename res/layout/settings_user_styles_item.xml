@@ -1,60 +1,62 @@
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/settings_item"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/settings_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/setting_user_styles"
+        style="@android:style/TextAppearance.Holo.SearchResult.Title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="22dp"
+        android:text="@string/setting_user_styles"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/setting_user_styles_empty"
+        app:layout_constraintEnd_toStartOf="@+id/setting_btn_add_user_style"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <ImageView
+        android:id="@+id/setting_btn_add_user_style"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="9dp"
+        android:layout_marginBottom="6dp"
+        android:paddingLeft="10dp"
+        android:paddingTop="6dp"
+        android:paddingRight="10dp"
+        android:paddingBottom="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/setting_user_styles_empty"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/setting_user_styles"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/setting_user_styles_empty"
+        style="@android:style/TextAppearance.Holo.SearchResult.Title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/setting_user_styles_empty"
+        android:textAlignment="center"
+        android:textColor="@android:color/darker_gray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/setting_user_styles" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/user_styles_recyclerview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="8dip"
-        android:paddingLeft="8dip"
-        android:paddingRight="8dip"
-        android:paddingTop="6dip"
-        android:orientation="vertical"
-        >
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/setting_user_styles"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            >
-            <TextView
-                android:id="@+id/setting_user_styles"
-                style="@android:style/TextAppearance.Holo.SearchResult.Title"
-                android:text="@string/setting_user_styles"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="22dip"
-                android:layout_gravity="start|top"
-                android:layout_weight="1"
-                android:textSize="20sp"/>
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/setting_btn_add_user_style"
-                android:layout_gravity="end|center_vertical"
-                android:paddingTop="6dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:paddingBottom="10dp" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/setting_user_styles_empty"
-            style="@android:style/TextAppearance.Holo.SearchResult.Title"
-            android:text="@string/setting_user_styles_empty"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:textColor="@android:color/darker_gray"
-            android:textAlignment="center"
-            android:gravity="center"/>
-
-        <LinearLayout
-            android:id="@+id/setting_user_styles_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            >
-
-        </LinearLayout>
-
-    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="start|top"
             android:layout_weight="1"/>
-        <Switch
+        <com.google.android.material.switchmaterial.SwitchMaterial
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:id="@+id/dictionary_active"
@@ -213,7 +213,7 @@
                 android:paddingBottom="4dp"
                 android:paddingLeft="16dp" />
 
-            <androidx.legacy.widget.Space
+            <Space
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"

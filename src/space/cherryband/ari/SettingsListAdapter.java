@@ -7,10 +7,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,14 +15,22 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import space.cherryband.ari.ui.ArticleWebView;
+import space.cherryband.ari.ui.IconMaker;
+import space.cherryband.ari.util.Util;
 
 public class SettingsListAdapter extends BaseAdapter implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -268,8 +272,8 @@ public class SettingsListAdapter extends BaseAdapter implements SharedPreference
         View emptyView = view.findViewById(R.id.setting_user_styles_empty);
         emptyView.setVisibility(userStyleNames.size() == 0 ? View.VISIBLE : View.GONE);
 
-        LinearLayout userStyleListLayout = view.findViewById(R.id.setting_user_styles_list);
-        userStyleListLayout.removeAllViews();
+        //LinearLayout userStyleListLayout = view.findViewById(R.id.setting_user_styles_list);
+        //userStyleListLayout.removeAllViews();
         for (int i = 0; i < userStyleNames.size(); i++) {
             View styleItemView = inflater.inflate(R.layout.user_styles_list_item, parent,
                     false);
@@ -284,7 +288,7 @@ public class SettingsListAdapter extends BaseAdapter implements SharedPreference
             TextView nameView = styleItemView.findViewById(R.id.user_styles_list_name);
             nameView.setText(name);
 
-            userStyleListLayout.addView(styleItemView);
+            //userStyleListLayout.addView(styleItemView);
         }
 
         return view;
@@ -399,13 +403,6 @@ public class SettingsListAdapter extends BaseAdapter implements SharedPreference
 
             ImageView sourceIcon = view.findViewById(R.id.setting_about_source_icon);
             sourceIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_EXTERNAL_LINK));
-
-            String appName = context.getString(R.string.app_name);
-
-            String title = context.getString(R.string.setting_about, appName);
-
-            TextView titleView = view.findViewById(R.id.setting_about);
-            titleView.setText(title);
 
             String licenseName = context.getString(R.string.application_license_name);
             final String licenseUrl = context.getString(R.string.application_license_url);

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/setting_category_display">
+        <ListPreference
+            android:entries="@array/ui_style_pref"
+            android:entryValues="@array/ui_style_pref_value"
+            android:key="UITheme"
+            android:title="@string/setting_ui_theme" />
+    </PreferenceCategory>
+
+`    <PreferenceCategory android:title="@string/setting_category_behaviour">
+`        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/remote_content_pref"
+            android:entryValues="@array/remote_content_pref_value"
+            android:key="remoteContent"
+            android:title="@string/setting_remote_content" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="onlyFavDictsForRandomLookup"
+            android:title="@string/setting_fav_random_search" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="useVolumeForNav"
+            android:title="@string/setting_use_volume_for_nav" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="autoPaste"
+            android:title="@string/setting_auto_paste" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/setting_group_system">
+        <Preference
+            android:title="@string/setting_clear_cache"
+            android:key="clearCache" />
+    </PreferenceCategory>
+    <Preference
+        android:key="about"
+        android:title="@string/setting_about"
+        />
+
+
+</PreferenceScreen>

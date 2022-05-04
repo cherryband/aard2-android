@@ -10,17 +10,7 @@
     >
 
     <TextView
-        android:id="@+id/setting_about"
-        style="@style/TextAppearance.AppCompat.Body1"
-        android:text="@string/setting_about"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="14dip"
-        android:textSize="20sp"/>
-
-    <TextView
         android:id="@+id/application_version"
-        style="@style/TextAppearance.AppCompat.Small"
         android:text="@string/application_version"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -48,7 +38,6 @@
 
         <TextView
             android:id="@+id/application_copyright"
-            style="@style/TextAppearance.AppCompat.Small"
             android:text="@string/application_copyright"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
@@ -73,7 +62,6 @@
             />
         <TextView
             android:id="@+id/application_license"
-            style="@style/TextAppearance.AppCompat.Small"
             android:text="@string/application_license_name"
             android:autoLink="web"
             android:layout_width="wrap_content"
@@ -101,7 +89,6 @@
             />
 
         <TextView
-            style="@style/TextAppearance.AppCompat.Small"
             android:text="@string/application_home_url"
             android:autoLink="web"
             android:layout_width="wrap_content"

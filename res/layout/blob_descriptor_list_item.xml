@@ -1,4 +1,4 @@
-<space.cherryband.ari.CheckableRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<space.cherryband.ari.ui.CheckableRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingBottom="6dip"
@@ -62,4 +62,4 @@
         android:layout_alignParentTop="true"
         />
 
-</space.cherryband.ari.CheckableRelativeLayout>
+</space.cherryband.ari.ui.CheckableRelativeLayout>

@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.App.Dark" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+    <style name="Theme.App.Dark" parent="Theme.Material3.Dark">
         <item name="colorPrimary">@color/primary_color</item>
-        <item name="colorPrimaryDark">@color/primary_color</item>
-        <item name="colorAccent">@color/secondary_color</item>
+        <item name="colorPrimaryContainer">@color/on_primary_color</item>
+        <item name="backgroundTint">@color/on_primary_color</item>
+        <item name="colorSecondary">@color/secondary_color</item>
+        <item name="colorSecondaryContainer">@color/on_secondary_color</item>
     </style>
-    <style name="Theme.App.Light" parent="Theme.AppCompat.Light">
+    <style name="Theme.App.Light" parent="Theme.Material3.Light">
         <item name="colorPrimary">@color/primary_color</item>
-        <item name="colorPrimaryDark">@color/primary_color</item>
-        <item name="colorAccent">@color/secondary_color</item>
+        <item name="colorPrimaryContainer">@color/on_primary_color</item>
+        <item name="backgroundTint">@color/on_primary_color</item>
+        <item name="colorSecondary">@color/secondary_color</item>
+        <item name="colorSecondaryContainer">@color/on_secondary_color</item>
     </style>
-    <style name="Theme.App" parent="Theme.AppCompat.DayNight">
+    <style name="Theme.App" parent="Theme.Material3.DayNight">
         <item name="colorPrimary">@color/primary_color</item>
-        <item name="colorPrimaryDark">@color/primary_color</item>
-        <item name="colorAccent">@color/secondary_color</item>
+        <item name="colorPrimaryContainer">@color/on_primary_color</item>
+        <item name="colorSecondary">@color/secondary_color</item>
+        <item name="colorSecondaryContainer">@color/on_secondary_color</item>
     </style>
 </resources>
