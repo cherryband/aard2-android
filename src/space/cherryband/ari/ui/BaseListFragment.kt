@@ -56,6 +56,7 @@ abstract class BaseListFragment : ListFragment() {
         super.onViewCreated(view, savedInstanceState)
         listView.emptyView = emptyView
         (listView.parent as ViewGroup).addView(emptyView, 0)
+        listView.isStackFromBottom = true
         if (supportsSelection) {
             listView.itemsCanFocus = false
             listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL

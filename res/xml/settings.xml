@@ -10,7 +10,7 @@
 
 `    <PreferenceCategory android:title="@string/setting_category_behaviour">
 `        <ListPreference
-            android:defaultValue="1"
+            android:defaultValue="wifi"
             android:entries="@array/remote_content_pref"
             android:entryValues="@array/remote_content_pref_value"
             android:key="remoteContent"

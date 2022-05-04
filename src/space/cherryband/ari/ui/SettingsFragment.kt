@@ -1,112 +1,101 @@
-package space.cherryband.ari.ui;
+package space.cherryband.ari.ui
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Bundle;
-import android.text.Html;
-import android.webkit.WebView;
-import android.widget.ImageView;
-import android.widget.TextView;
+import androidx.preference.PreferenceFragmentCompat
+import android.os.Bundle
+import space.cherryband.ari.R
+import android.content.DialogInterface
+import space.cherryband.ari.ui.IconMaker
+import android.widget.TextView
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.PackageInfo
+import android.net.Uri
+import android.text.Html
+import android.view.View
+import android.webkit.WebView
+import android.widget.ImageView
+import androidx.appcompat.app.AlertDialog
+import androidx.preference.Preference
+import space.cherryband.ari.ui.SettingsFragment
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
-
-import space.cherryband.ari.R;
-
-public class SettingsFragment extends PreferenceFragmentCompat {
-
-
-    private final static String TAG = SettingsFragment.class.getSimpleName();
-    private AlertDialog clearCacheConfirmationDialog, aboutDialog;
-
-    @Override
-    public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
-        setPreferencesFromResource(R.xml.settings, rootKey);
+class SettingsFragment : PreferenceFragmentCompat() {
+    private var clearCacheConfirmationDialog: AlertDialog? = null
+    private var aboutDialog: AlertDialog? = null
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.settings, rootKey)
     }
 
-    @Override
-    public boolean onPreferenceTreeClick(@NonNull Preference preference) {
-        if (preference.getKey().equals("clearCache")) {
-            createClearCacheDialog();
-            return true;
-        } if (preference.getKey().equals("about")) {
-            createAboutDialog();
-            return true;
+    override fun onPreferenceTreeClick(preference: Preference): Boolean {
+        return when (preference.key) {
+            "clearCache" -> {
+                createClearCacheDialog()
+                true
+            }
+            "about" -> {
+                createAboutDialog()
+                true
+            }
+            else -> super.onPreferenceTreeClick(preference)
         }
-        return super.onPreferenceTreeClick(preference);
     }
 
-    private void createAboutDialog() {
-        final Context context = getContext();
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-        String appName = context.getString(R.string.app_name);
-        String title = context.getString(R.string.setting_about, appName);
+    private fun createAboutDialog() {
+        val context = context
+        val builder = AlertDialog.Builder(requireActivity())
+        val appName = context!!.getString(R.string.app_name)
+        val title = context.getString(R.string.setting_about, appName)
         builder.setTitle(title)
-                .setNeutralButton(android.R.string.ok, (dialogInterface, i) -> {})
-                .setOnDismissListener(dialogInterface -> aboutDialog = null);
-        aboutDialog = builder.create();
-        aboutDialog.setContentView(R.layout.settings_about_item);
-
-        ImageView copyrightIcon = aboutDialog.findViewById(R.id.setting_about_copyright_icon);
+            .setNeutralButton(android.R.string.ok) { _, _ -> }
+            .setOnDismissListener { _ -> aboutDialog = null }
+        aboutDialog = builder.create()
+        aboutDialog!!.setContentView(R.layout.settings_about_item)
+        val copyrightIcon = aboutDialog!!.findViewById<ImageView>(R.id.setting_about_copyright_icon)
 
         //copyrightIcon.setImageDrawable(FontIconDrawable.inflate(context, R.xml.ic_text_copyright));
-        copyrightIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_COPYRIGHT));
-
-        ImageView licenseIcon = aboutDialog.findViewById(R.id.setting_about_license_icon);
-        licenseIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_LICENSE));
-
-        ImageView sourceIcon = aboutDialog.findViewById(R.id.setting_about_source_icon);
-        sourceIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_EXTERNAL_LINK));
-
-        String licenseName = context.getString(R.string.application_license_name);
-        final String licenseUrl = context.getString(R.string.application_license_url);
-        String license = context.getString(R.string.application_license, licenseUrl, licenseName);
-        TextView licenseView = aboutDialog.findViewById(R.id.application_license);
-        licenseView.setOnClickListener(view1 -> {
-            Uri uri = Uri.parse(licenseUrl);
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
-            context.startActivity(browserIntent);
-        });
-        licenseView.setText(Html.fromHtml(license.trim()));
-
-        PackageManager manager = context.getPackageManager();
-        String versionName;
-        try {
-            PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
-            versionName = info.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            versionName = "?";
+        copyrightIcon!!.setImageDrawable(IconMaker.text(context, IconMaker.IC_COPYRIGHT))
+        val licenseIcon = aboutDialog!!.findViewById<ImageView>(R.id.setting_about_license_icon)
+        licenseIcon!!.setImageDrawable(IconMaker.text(context, IconMaker.IC_LICENSE))
+        val sourceIcon = aboutDialog!!.findViewById<ImageView>(R.id.setting_about_source_icon)
+        sourceIcon!!.setImageDrawable(IconMaker.text(context, IconMaker.IC_EXTERNAL_LINK))
+        val licenseName = context.getString(R.string.application_license_name)
+        val licenseUrl = context.getString(R.string.application_license_url)
+        val license = context.getString(R.string.application_license, licenseUrl, licenseName)
+        val licenseView = aboutDialog!!.findViewById<TextView>(R.id.application_license)
+        licenseView!!.setOnClickListener {
+            val uri = Uri.parse(licenseUrl)
+            val browserIntent = Intent(Intent.ACTION_VIEW, uri)
+            context.startActivity(browserIntent)
         }
-
-        String version = context.getString(R.string.application_version, versionName);
-        TextView versionView = aboutDialog.findViewById(R.id.application_version);
-        versionView.setText(Html.fromHtml(version));
-        aboutDialog.show();
+        licenseView.text = Html.fromHtml(license.trim { it <= ' ' })
+        val manager = context.packageManager
+        val versionName: String = try {
+            val info = manager.getPackageInfo(context.packageName, 0)
+            info.versionName
+        } catch (e: PackageManager.NameNotFoundException) {
+            "?"
+        }
+        val version = context.getString(R.string.application_version, versionName)
+        val versionView = aboutDialog!!.findViewById<TextView>(R.id.application_version)
+        versionView!!.text = Html.fromHtml(version)
+        aboutDialog!!.show()
     }
 
-    private void createClearCacheDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+    private fun createClearCacheDialog() {
+        val builder = AlertDialog.Builder(requireActivity())
         builder.setMessage(R.string.confirm_clear_cached_content)
-                .setPositiveButton(android.R.string.ok, (dialog, id12) -> {
-                    WebView webView = new WebView(requireActivity());
-                    webView.clearCache(true);
-                })
-                .setNegativeButton(android.R.string.cancel, (dialog, id1) -> {
-                    // User cancelled the dialog
-                })
-                .setOnDismissListener(dialogInterface -> clearCacheConfirmationDialog = null);
-        clearCacheConfirmationDialog = builder.create();
-        clearCacheConfirmationDialog.show();
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val webView = WebView(requireActivity())
+                webView.clearCache(true)
+            }
+            .setNegativeButton(android.R.string.cancel) { _, _ -> }
+            .setOnDismissListener {
+                clearCacheConfirmationDialog = null
+            }
+        clearCacheConfirmationDialog = builder.create()
+        clearCacheConfirmationDialog!!.show()
     }
 
-/*
+    /*
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode != SettingsListAdapter.CSS_SELECT_REQUEST) {
@@ -155,13 +144,103 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         }
     }
-*/
+    
+
+    final static int CSS_SELECT_REQUEST = 13;
+
+    private final static String TAG = SettingsListAdapter.class.getSimpleName();
+
+    private List<String> userStyleNames;
+    private Map<String, ?> userStyleData;
+
+    private View getUserStylesView(View convertView, final ViewGroup parent) {
+        View view;
+        LayoutInflater inflater = (LayoutInflater) parent.getContext()
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        if (convertView != null) {
+            view = convertView;
+        } else {
+            this.userStyleData = userStylePrefs.getAll();
+            this.userStyleNames = new ArrayList<>(this.userStyleData.keySet());
+            Util.sort(this.userStyleNames);
+
+            view = inflater.inflate(R.layout.settings_user_styles_item, parent,
+                    false);
+            ImageView btnAdd = view.findViewById(R.id.setting_btn_add_user_style);
+            btnAdd.setImageDrawable(IconMaker.list(context, IconMaker.IC_ADD));
+            btnAdd.setOnClickListener(view1 -> {
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                intent.setType("text/ *");
+                Intent chooser = Intent.createChooser(intent, "Select CSS file");
+                try {
+                    fragment.startActivityForResult(chooser, CSS_SELECT_REQUEST);
+                } catch (ActivityNotFoundException e) {
+                    Log.d(TAG, "Not activity to get content", e);
+                    Toast.makeText(context, R.string.msg_no_activity_to_get_content,
+                            Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
+        View emptyView = view.findViewById(R.id.setting_user_styles_empty);
+        emptyView.setVisibility(userStyleNames.size() == 0 ? View.VISIBLE : View.GONE);
+
+        //LinearLayout userStyleListLayout = view.findViewById(R.id.setting_user_styles_list);
+        //userStyleListLayout.removeAllViews();
+        for (int i = 0; i < userStyleNames.size(); i++) {
+            View styleItemView = inflater.inflate(R.layout.user_styles_list_item, parent,
+                    false);
+            ImageView btnDelete = styleItemView.findViewById(R.id.user_styles_list_btn_delete);
+            btnDelete.setImageDrawable(IconMaker.list(context, IconMaker.IC_TRASH));
+            btnDelete.setOnClickListener(onDeleteUserStyle);
+
+            String name = userStyleNames.get(i);
+
+            btnDelete.setTag(name);
+
+            TextView nameView = styleItemView.findViewById(R.id.user_styles_list_name);
+            nameView.setText(name);
+
+            //userStyleListLayout.addView(styleItemView);
+        }
+
+        return view;
+    }
+
+    private void deleteUserStyle(final String name) {
+        String message = context.getString(R.string.setting_user_style_confirm_forget, name);
+        new AlertDialog.Builder(context)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("")
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                    Log.d(TAG, "Deleting user style " + name);
+                    SharedPreferences.Editor edit = userStylePrefs.edit();
+                    edit.remove(name);
+                    edit.apply();
+                })
+                .setNegativeButton(android.R.string.no, null)
+                .show();
+    }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        this.userStyleData = sharedPreferences.getAll();
+        this.userStyleNames = new ArrayList<>(this.userStyleData.keySet());
+        Util.sort(userStyleNames);
+        notifyDataSetChanged();
+    }
+*/
+
+    override fun onPause() {
+        super.onPause()
         if (clearCacheConfirmationDialog != null) {
-            clearCacheConfirmationDialog.dismiss();
+            clearCacheConfirmationDialog!!.dismiss()
         }
+    }
+
+    companion object {
+        private val TAG = SettingsFragment::class.java.simpleName
     }
 }

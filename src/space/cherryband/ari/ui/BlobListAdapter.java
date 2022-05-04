@@ -2,7 +2,6 @@ package space.cherryband.ari.ui;
 
 import android.content.Context;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +10,6 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,7 +26,6 @@ public class BlobListAdapter extends BaseAdapter {
     final Handler mainHandler;
     final List<Slob.Blob> list;
     Iterator<Slob.Blob> iter;
-    final Iterator<Slob.Blob> emptyIter = Collections.emptyIterator();
     final ExecutorService executor;
 
     private final int chunkSize;
@@ -49,12 +46,9 @@ public class BlobListAdapter extends BaseAdapter {
     }
 
     public void setData(Iterator<Slob.Blob> lookupResultsIter) {
-        mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                list.clear();
-                notifyDataSetChanged();
-            }
+        mainHandler.post(() -> {
+            list.clear();
+            notifyDataSetChanged();
         });
         this.iter = lookupResultsIter;
         loadChunkSync();
@@ -72,12 +66,9 @@ public class BlobListAdapter extends BaseAdapter {
             chunkList.add(b);
         }
 
-        mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                list.addAll(chunkList);
-                notifyDataSetChanged();
-            }
+        mainHandler.post(() -> {
+            list.addAll(chunkList);
+            notifyDataSetChanged();
         });
 
         Log.d(TAG,

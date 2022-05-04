@@ -365,7 +365,7 @@ public class ArticleWebView extends SearchableWebView {
     }
 
     private SharedPreferences prefs() {
-        return getContext().getSharedPreferences(PREF, AppCompatActivity.MODE_PRIVATE);
+        return getApplication().prefs();
     }
 
     void applyTextZoomPref() {

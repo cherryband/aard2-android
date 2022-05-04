@@ -94,7 +94,7 @@ internal abstract class BlobDescriptorListFragment : BaseListFragment() {
         icArrowUp = IconMaker.actionBar(activity, IconMaker.IC_SORT_ASC)
         icArrowDown = IconMaker.actionBar(activity, IconMaker.IC_SORT_DESC)
         listView.onItemClickListener =
-            OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
+            OnItemClickListener { _, _, position: Int, _ ->
                 Intent(
                     activity,
                     ArticleCollectionActivity::class.java
