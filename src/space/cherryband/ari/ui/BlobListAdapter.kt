@@ -1,135 +1,113 @@
-package space.cherryband.ari.ui;
+package space.cherryband.ari.ui
 
-import android.content.Context;
-import android.os.Handler;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.TextView;
+import android.content.Context
+import android.os.Handler
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.TextView
+import itkach.slob.Slob
+import space.cherryband.ari.R
+import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import itkach.slob.Slob;
-import space.cherryband.ari.R;
-
-public class BlobListAdapter extends BaseAdapter {
-
-    private static final String TAG = BlobListAdapter.class.getSimpleName();
-
-    final Handler mainHandler;
-    final List<Slob.Blob> list;
-    Iterator<Slob.Blob> iter;
-    final ExecutorService executor;
-
-    private final int chunkSize;
-    private final int loadMoreThreashold;
-    final int MAX_SIZE = 10000;
-
-
-    public BlobListAdapter(Context context) {
-        this(context, 20, 10);
-    }
-
-    public BlobListAdapter(Context context, int chunkSize, int loadMoreThreashold) {
-        this.mainHandler = new Handler(context.getMainLooper());
-        this.executor = Executors.newSingleThreadExecutor();
-        this.list = new ArrayList<>(chunkSize);
-        this.chunkSize = chunkSize;
-        this.loadMoreThreashold = loadMoreThreashold;
-    }
-
-    public void setData(Iterator<Slob.Blob> lookupResultsIter) {
-        mainHandler.post(() -> {
-            list.clear();
-            notifyDataSetChanged();
-        });
-        this.iter = lookupResultsIter;
-        loadChunkSync();
-    }
-
-    private void loadChunkSync() {
-        long t0 = System.currentTimeMillis();
-        int count = 0;
-        final List<Slob.Blob> chunkList = new LinkedList<>();
-
-        while (iter.hasNext() && count < chunkSize
-                && list.size() <= MAX_SIZE) {
-            count++;
-            Slob.Blob b = iter.next();
-            chunkList.add(b);
+class BlobListAdapter @JvmOverloads constructor(
+    context: Context,
+    chunkSize: Int = 20,
+    loadMoreThreshold: Int = 10
+) : BaseAdapter() {
+    private val mainHandler: Handler
+    val list: MutableList<Slob.Blob>
+    private var iterator: Iterator<Slob.Blob>? = null
+    private val executor: ExecutorService
+    private val chunkSize: Int
+    private val loadMoreThreshold: Int
+    fun setData(lookupResultsIterator: Iterator<Slob.Blob>?) {
+        mainHandler.post {
+            list.clear()
+            notifyDataSetChanged()
         }
-
-        mainHandler.post(() -> {
-            list.addAll(chunkList);
-            notifyDataSetChanged();
-        });
-
-        Log.d(TAG,
-                String.format("Loaded chunk of %d (adapter size %d) in %d ms",
-                        count, list.size(), (System.currentTimeMillis() - t0)));
+        iterator = lookupResultsIterator
+        loadChunkSync()
     }
 
-    private void loadChunk() {
-        if (!iter.hasNext()) {
-            return;
+    private fun loadChunkSync() {
+        val t0 = System.currentTimeMillis()
+        var count = 0
+        val chunkList: MutableList<Slob.Blob> = LinkedList()
+        while (iterator!!.hasNext() && count < chunkSize && list.size <= MAX_SIZE) {
+            count++
+            val b = iterator!!.next()
+            chunkList.add(b)
         }
-        executor.execute(this::loadChunkSync);
+        mainHandler.post {
+            list.addAll(chunkList)
+            notifyDataSetChanged()
+        }
+        Log.d(
+            TAG,
+            "Loaded chunk of $count (adapter size ${list.size})" +
+                    " in ${System.currentTimeMillis() - t0} ms"
+        )
     }
 
-    @Override
-    public int getCount() {
-        return list.size();
+    private fun loadChunk() {
+        if (!iterator!!.hasNext()) {
+            return
+        }
+        executor.execute { loadChunkSync() }
     }
 
-    @Override
-    public Object getItem(int position) {
-        Object result = list.get(position);
-        maybeLoadMore(position);
-        return result;
+    override fun getCount(): Int = list.size
+
+    override fun getItem(position: Int): Any {
+        val result: Any = list[position]
+        maybeLoadMore(position)
+        return result
     }
 
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
+    override fun getItemId(position: Int) = position.toLong()
 
-    private void maybeLoadMore(int position) {
-        if (position >= list.size() - loadMoreThreashold) {
-            loadChunk();
+    private fun maybeLoadMore(position: Int) {
+        if (position >= list.size - loadMoreThreshold) {
+            loadChunk()
         }
     }
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        Slob.Blob item = list.get(position);
-        Slob slob = item.owner;
-        maybeLoadMore(position);
-
-        View view;
-        if (convertView != null) {
-            view = convertView;
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val item = list[position]
+        val slob = item.owner
+        maybeLoadMore(position)
+        val view: View = if (convertView != null) {
+            convertView
         } else {
-            LayoutInflater inflater = (LayoutInflater) parent.getContext()
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = inflater.inflate(R.layout.blob_descriptor_list_item, parent, false);
+            val inflater = parent.context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+            inflater.inflate(R.layout.blob_descriptor_list_item, parent, false)
         }
-
-        TextView titleView = view.findViewById(R.id.blob_descriptor_key);
-        titleView.setText(item.key);
-        TextView sourceView = view.findViewById(R.id.blob_descriptor_source);
-        sourceView.setText(slob == null ? "???" : slob.getTags().get("label"));
-        TextView timestampView = view.findViewById(R.id.blob_descriptor_timestamp);
-        timestampView.setText("");
-        timestampView.setVisibility(View.GONE);
-        return view;
-
+        val titleView: TextView = view.findViewById(R.id.blob_descriptor_key)
+        val sourceView: TextView = view.findViewById(R.id.blob_descriptor_source)
+        val timestampView: TextView = view.findViewById(R.id.blob_descriptor_timestamp)
+        titleView.text = item.key
+        sourceView.text = if (slob == null) "???" else slob.tags["label"]
+        timestampView.text = ""
+        timestampView.visibility = View.GONE
+        return view
     }
 
+    companion object {
+        private const val MAX_SIZE = 10000
+        private val TAG = BlobListAdapter::class.java.simpleName
+    }
+
+    init {
+        mainHandler = Handler(context.mainLooper)
+        executor = Executors.newSingleThreadExecutor()
+        list = ArrayList(chunkSize)
+        this.chunkSize = chunkSize
+        this.loadMoreThreshold = loadMoreThreshold
+    }
 }

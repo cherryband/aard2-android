@@ -3,10 +3,10 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="8dip"
-    android:paddingLeft="8dip"
-    android:paddingRight="8dip"
-    android:paddingTop="6dip">
+    android:paddingBottom="8dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    android:paddingTop="8dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,26 +18,28 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/dictionary_btn_toggle_fav"
-            android:layout_gravity="top"
+            android:layout_gravity="center_horizontal"
             android:baselineAlignBottom="true"
             android:paddingEnd="6dp"
             android:layout_marginTop="3dp" />
+
         <TextView
             android:id="@+id/dictionary_label"
-            style="@android:style/TextAppearance.Holo.SearchResult.Title"
+            style="@android:style/TextAppearance.Material.SearchResult.Title"
             android:textSize="20sp"
             android:text="WordNet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="start|top"
+            android:layout_gravity="center_horizontal"
             android:layout_weight="1"/>
+
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:id="@+id/dictionary_active"
             android:checked="true"
             android:enabled="true"
-            android:layout_gravity="top"
+            android:layout_gravity="center_horizontal"
             android:layout_weight="0"/>
     </LinearLayout>
 
@@ -47,6 +49,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="4dp"
+        android:layout_gravity="center_horizontal"
         >
 
         <ImageView
@@ -59,7 +62,7 @@
 
         <TextView
             android:id="@+id/dictionary_error"
-            style="@android:style/TextAppearance.Holo.Small"
+            style="@android:style/TextAppearance.Material.Subhead"
             android:text="File does not exist"
             android:textColor="@android:color/holo_red_dark"
             android:visibility="visible"
@@ -79,11 +82,11 @@
 
         <TextView
             android:id="@+id/dictionary_blob_count"
-            style="@android:style/TextAppearance.Holo.Small"
+            style="@android:style/TextAppearance.Material.Medium"
             android:text="100,000 items"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="6dp"
+            android:layout_marginTop="4dp"
             />
 
         <LinearLayout
@@ -92,6 +95,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="2dp"
+            android:layout_marginTop="4dp"
             >
 
             <ImageView
@@ -104,7 +108,7 @@
 
             <TextView
                 android:id="@+id/dictionary_copyright"
-                style="@android:style/TextAppearance.Holo.SearchResult.Subtitle"
+                style="@android:style/TextAppearance.Material.SearchResult.Subtitle"
                 android:text="2014 Wikipedia editors and contributors"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -117,7 +121,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="2dp"
+            android:layout_marginTop="4dp"
             >
             <ImageView
                 android:id="@+id/dictionary_license_icon"
@@ -128,7 +132,7 @@
                 />
             <TextView
                 android:id="@+id/dictionary_license"
-                style="@android:style/TextAppearance.Holo.SearchResult.Subtitle"
+                style="@android:style/TextAppearance.Material.SearchResult.Subtitle"
                 android:text="Creative Commons with Attribution"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -142,7 +146,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="2dp"
+            android:layout_marginTop="4dp"
             >
 
             <ImageView
@@ -155,7 +159,7 @@
 
             <TextView
                 android:id="@+id/dictionary_source"
-                style="@android:style/TextAppearance.Holo.SearchResult.Subtitle"
+                style="@android:style/TextAppearance.Material.SearchResult.Subtitle"
                 android:text="http://en.wikipedia.org"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -167,7 +171,7 @@
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="2dp"
+            android:layout_marginTop="4dp"
             >
             <ImageView
                 android:id="@+id/dictionary_path_icon"
@@ -178,7 +182,7 @@
                 />
             <TextView
                 android:id="@+id/dictionary_path"
-                style="@android:style/TextAppearance.Holo.SearchResult.Subtitle"
+                style="@android:style/TextAppearance.Material.SearchResult.Subtitle"
                 android:text="/mnt/sdcard/wordnet.slob"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -212,21 +216,13 @@
                 android:paddingTop="8dp"
                 android:paddingBottom="4dp"
                 android:paddingLeft="16dp" />
-
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:id="@+id/dictionary_btn_toggle_detail_space"
-                />
         </LinearLayout>
-
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/dictionary_btn_forget"
-            android:layout_gravity="start"
+            android:layout_gravity="end"
             android:paddingRight="16dp"
             android:paddingTop="8dp"
             android:paddingBottom="4dp"

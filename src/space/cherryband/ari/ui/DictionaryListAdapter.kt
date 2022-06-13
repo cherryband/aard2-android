@@ -1,321 +1,283 @@
-package space.cherryband.ari.ui;
+package space.cherryband.ari.ui
 
-import static java.lang.String.format;
+import android.content.Context
+import android.content.Intent
+import android.content.res.Resources
+import android.database.DataSetObserver
+import android.net.Uri
+import android.text.Html
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.documentfile.provider.DocumentFile
+import androidx.fragment.app.FragmentActivity
+import com.google.android.material.switchmaterial.SwitchMaterial
+import space.cherryband.ari.R
+import space.cherryband.ari.data.SlobDescriptor
+import space.cherryband.ari.data.SlobDescriptorList
+import space.cherryband.ari.util.IconMaker
+import space.cherryband.ari.util.Util
+import java.util.*
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.res.Resources;
-import android.database.DataSetObserver;
-import android.net.Uri;
-import android.text.Html;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.documentfile.provider.DocumentFile;
-import androidx.fragment.app.FragmentActivity;
-
-import com.google.android.material.switchmaterial.SwitchMaterial;
-
-import java.util.Locale;
-
-import space.cherryband.ari.R;
-import space.cherryband.ari.data.SlobDescriptor;
-import space.cherryband.ari.data.SlobDescriptorList;
-import space.cherryband.ari.util.IconMaker;
-import space.cherryband.ari.util.Util;
-
-public class DictionaryListAdapter extends BaseAdapter {
-
-    private final static String TAG = DictionaryListAdapter.class.getName();
-
-    private final SlobDescriptorList data;
-    private final FragmentActivity context;
-    private final View.OnClickListener openUrlOnClick;
-    private AlertDialog deleteConfirmationDialog;
-
-    private final static String hrefTemplate = "<a href='%1$s'>%2$s</a>";
-
-    DictionaryListAdapter(SlobDescriptorList data, FragmentActivity context) {
-        this.data = data;
-        this.context = context;
-        DataSetObserver observer = new DataSetObserver() {
-            @Override
-            public void onChanged() {
-                notifyDataSetChanged();
-            }
-
-            @Override
-            public void onInvalidated() {
-                notifyDataSetInvalidated();
-            }
-        };
-        this.data.registerDataSetObserver(observer);
-
-        openUrlOnClick = v -> {
-            String url = (String) v.getTag();
-            if (!Util.isBlank(url)) {
-                try {
-                    Uri uri = Uri.parse(url);
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
-                    v.getContext().startActivity(browserIntent);
-                } catch (Exception e) {
-                    Log.d(TAG, "Failed to launch browser with url " + url, e);
-                }
-            }
-        };
-    }
-
-    @Override
-    public View getView(int position, final View convertView, ViewGroup parent) {
-        SlobDescriptor desc = (SlobDescriptor) getItem(position);
-        String label = desc.getLabel();
-        String fileName;
-        try {
-            DocumentFile documentFile = DocumentFile.fromSingleUri(parent.getContext(), Uri.parse(desc.path));
-            assert documentFile != null;
-            fileName = documentFile.getName();
-        } catch (Exception ex) {
-            fileName = desc.path;
-            Log.w(TAG, "Couldn't parse get document file name from uri" + desc.path, ex);
+class DictionaryListAdapter internal constructor(
+    private val data: SlobDescriptorList,
+    private val context: FragmentActivity?
+) : BaseAdapter() {
+    private val openUrlOnClick: View.OnClickListener
+    private var deleteConfirmationDialog: AlertDialog? = null
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val desc = getItem(position) as SlobDescriptor
+        val label = desc.label
+        val fileName: String? = try {
+            val documentFile = DocumentFile.fromSingleUri(parent.context, Uri.parse(desc.path))!!
+            documentFile.name
+        } catch (ex: Exception) {
+            Log.w(TAG, "Couldn't parse get document file name from uri ${desc.path}", ex)
+            desc.path
         }
-        long blobCount = desc.blobCount;
-        boolean available = this.data.resolve(desc) != null;
-        View view;
-        SwitchMaterial switchView = null;
-        TextView titleView = null;
+        val blobCount = desc.blobCount
+        val available = data.resolve(desc) != null
+        var switchView: SwitchMaterial? = null
+        var titleView: TextView? = null
+        val toggleIcon = if (desc.expandDetail) IconMaker.IC_ANGLE_UP else IconMaker.IC_ANGLE_DOWN
+        val favIcon = if (desc.priority > 0) IconMaker.IC_STAR else IconMaker.IC_STAR_O
+        val view: View
         if (convertView == null) {
-            LayoutInflater inflater = (LayoutInflater) parent.getContext()
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = inflater.inflate(R.layout.dictionary_list_item, parent,
-                    false);
+            val inflater = parent.context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+            view = inflater.inflate(
+                R.layout.dictionary_list_item, parent,
+                false
+            )
 
-            View licenseView = view.findViewById(R.id.dictionary_license);
-            licenseView.setOnClickListener(openUrlOnClick);
-
-            View sourceView = view.findViewById(R.id.dictionary_source);
-            sourceView.setOnClickListener(openUrlOnClick);
-
-            switchView = view.findViewById(R.id.dictionary_active);
-            switchView.setOnClickListener(view14 -> {
-                SwitchMaterial activeSwitch1 = (SwitchMaterial) view14;
-                Integer position14 = (Integer) view14.getTag();
-                SlobDescriptor desc13 = data.get(position14);
-                desc13.active = activeSwitch1.isChecked();
-                data.set(position14, desc13);
-            });
-
-            View btnForget = view
-                    .findViewById(R.id.dictionary_btn_forget);
-            btnForget.setOnClickListener(view1 -> {
-                Integer position1 = (Integer) view1.getTag();
-                forget(position1);
-            });
-
-            View.OnClickListener detailToggle = view12 -> {
-                Integer position12 = (Integer) view12.getTag();
-                SlobDescriptor desc1 = data.get(position12);
-                desc1.expandDetail = !desc1.expandDetail;
-                data.set(position12, desc1);
-            };
-
-            View viewDetailToggle = view
-                    .findViewById(R.id.dictionary_detail_toggle);
-            viewDetailToggle.setOnClickListener(detailToggle);
-
-            View.OnClickListener toggleFavListener = view13 -> {
-                Integer position13 = (Integer) view13.getTag();
-                SlobDescriptor desc12 = data.get(position13);
-                long currentTime = System.currentTimeMillis();
-                if (desc12.priority == 0) {
-                    desc12.priority = currentTime;
-                } else {
-                    desc12.priority = 0;
+            val detailToggle = View.OnClickListener { detailToggle: View ->
+                val pos = detailToggle.tag as Int
+                val descriptor = data[pos]
+                descriptor.expandDetail = !descriptor.expandDetail
+                data[pos] = descriptor
+            }
+            val toggleFavListener = View.OnClickListener { toggleFav: View ->
+                val pos = toggleFav.tag as Int
+                val currentTime = System.currentTimeMillis()
+                data[pos] = data[pos].apply {
+                    priority = if (priority == 0L) currentTime else 0
+                    lastAccess = currentTime
+                    data.beginUpdate()
                 }
-                desc12.lastAccess = currentTime;
-                data.beginUpdate();
-                data.set(position13, desc12);
-                data.sort();
-                data.endUpdate(true);
-            };
-            View btnToggleFav = view
-                    .findViewById(R.id.dictionary_btn_toggle_fav);
-            btnToggleFav.setOnClickListener(toggleFavListener);
-            titleView = view.findViewById(R.id.dictionary_label);
-            titleView.setOnClickListener(toggleFavListener);
+                data.sort()
+                data.endUpdate(true)
+            }
+
+            val licenseView: View = view.findViewById(R.id.dictionary_license)
+            val sourceView: View = view.findViewById(R.id.dictionary_source)
+            val btnForget: View = view.findViewById(R.id.dictionary_btn_forget)
+            val viewDetailToggle: View = view.findViewById(R.id.dictionary_detail_toggle)
+            val btnToggleFav: View = view.findViewById(R.id.dictionary_btn_toggle_fav)
+
+            switchView = view.findViewById(R.id.dictionary_active)
+            titleView = view.findViewById(R.id.dictionary_label)
+
+            licenseView.setOnClickListener(openUrlOnClick)
+            sourceView.setOnClickListener(openUrlOnClick)
+            viewDetailToggle.setOnClickListener(detailToggle)
+            btnToggleFav.setOnClickListener(toggleFavListener)
+            titleView.setOnClickListener(toggleFavListener)
+            switchView.setOnClickListener { view14: View ->
+                val activeSwitch1 = view14 as SwitchMaterial
+                val position14 = view14.getTag() as Int
+                val desc13 = data[position14]
+                desc13.active = activeSwitch1.isChecked
+                data[position14] = desc13
+            }
+            btnForget.setOnClickListener { forget: View ->
+                val pos = forget.tag as Int
+                forget(pos)
+            }
         } else {
-            view = convertView;
+            view = convertView
         }
+        val r = parent.resources
+        if (switchView == null) switchView = view.findViewById(R.id.dictionary_active)
+        if (titleView == null) titleView = view.findViewById(R.id.dictionary_label)
+        val detailView: View = view.findViewById(R.id.dictionary_details)
+        val btnToggleDetail: ImageView = view.findViewById(R.id.dictionary_btn_toggle_detail)
+        val viewDetailToggle: View = view.findViewById(R.id.dictionary_detail_toggle)
+        val btnForget: ImageView = view.findViewById(R.id.dictionary_btn_forget)
+        val btnToggleFav: ImageView = view.findViewById(R.id.dictionary_btn_toggle_fav)
 
-        Resources r = parent.getResources();
+        switchView!!.isChecked = desc.active
+        switchView.tag = position
+        titleView!!.isEnabled = available
+        titleView.text = label
+        titleView.tag = position
 
-        if (switchView == null) switchView = view.findViewById(R.id.dictionary_active);
-        switchView.setChecked(desc.active);
-        switchView.setTag(position);
-
-        if (titleView == null) titleView = view.findViewById(R.id.dictionary_label);
-        titleView.setEnabled(available);
-        titleView.setText(label);
-        titleView.setTag(position);
-
-        View detailView = view.findViewById(R.id.dictionary_details);
-        detailView.setVisibility(desc.expandDetail ? View.VISIBLE : View.GONE);
-
-        setupBlobCountView(desc, blobCount, available, view, r);
-        setupCopyrightView(desc, available, view);
-        setupLicenseView(desc, available, view);
-        setupSourceView(desc, available, view);
-        setupPathView(fileName, available, view);
-        setupErrorView(desc, view);
-
-        ImageView btnToggleDetail = view.findViewById(R.id.dictionary_btn_toggle_detail);
-        char toggleIcon = desc.expandDetail ? IconMaker.IC_ANGLE_UP : IconMaker.IC_ANGLE_DOWN;
-        btnToggleDetail.setImageDrawable(IconMaker.list(context, toggleIcon));
-
-        View viewDetailToggle = view.findViewById(R.id.dictionary_detail_toggle);
-        viewDetailToggle.setTag(position);
-
-        ImageView btnForget = view.findViewById(R.id.dictionary_btn_forget);
-        btnForget.setImageDrawable(IconMaker.list(context, IconMaker.IC_TRASH));
-        btnForget.setTag(position);
-
-        ImageView btnToggleFav = view.findViewById(R.id.dictionary_btn_toggle_fav);
-        char favIcon = desc.priority > 0 ? IconMaker.IC_STAR : IconMaker.IC_STAR_O;
-        btnToggleFav.setImageDrawable(IconMaker.list(context, favIcon));
-        btnToggleFav.setTag(position);
-        return view;
+        setupBlobCountView(desc, blobCount, available, view, r)
+        setupCopyrightView(desc, available, view)
+        setupLicenseView(desc, available, view)
+        setupSourceView(desc, available, view)
+        setupPathView(fileName, available, view)
+        setupErrorView(desc, view)
+        detailView.visibility = if (desc.expandDetail) View.VISIBLE else View.GONE
+        btnToggleDetail.setImageDrawable(IconMaker.list(context, toggleIcon))
+        viewDetailToggle.tag = position
+        btnForget.setImageDrawable(IconMaker.list(context, IconMaker.IC_TRASH))
+        btnForget.tag = position
+        btnToggleFav.setImageDrawable(IconMaker.list(context, favIcon))
+        btnToggleFav.tag = position
+        return view
     }
 
-    private void setupPathView(String path, boolean available, View view) {
-        View pathRow = view.findViewById(R.id.dictionary_path_row);
-
-        ImageView pathIcon = view.findViewById(R.id.dictionary_path_icon);
-        pathIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_FILE_ARCHIVE));
-
-        TextView pathView = view.findViewById(R.id.dictionary_path);
-        pathView.setText(path);
-
-        pathRow.setEnabled(available);
+    private fun setupPathView(path: String?, available: Boolean, view: View) {
+        val pathRow: View = view.findViewById(R.id.dictionary_path_row)
+        val pathIcon: ImageView = view.findViewById(R.id.dictionary_path_icon)
+        val pathView: TextView = view.findViewById(R.id.dictionary_path)
+        pathIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_FILE_ARCHIVE))
+        pathView.text = path
+        pathRow.isEnabled = available
     }
 
-    private void setupErrorView(SlobDescriptor desc, View view) {
-        View errorRow = view.findViewById(R.id.dictionary_error_row);
-
-        ImageView errorIcon = view.findViewById(R.id.dictionary_error_icon);
-        errorIcon.setImageDrawable(IconMaker.errorText(context, IconMaker.IC_ERROR));
-
-        TextView errorView = view.findViewById(R.id.dictionary_error);
-        errorView.setText(desc.error);
-
-        errorRow.setVisibility(desc.error == null ? View.GONE : View.VISIBLE);
+    private fun setupErrorView(desc: SlobDescriptor, view: View) {
+        val errorRow: View = view.findViewById(R.id.dictionary_error_row)
+        val errorIcon: ImageView = view.findViewById(R.id.dictionary_error_icon)
+        val errorView: TextView = view.findViewById(R.id.dictionary_error)
+        errorIcon.setImageDrawable(IconMaker.errorText(context, IconMaker.IC_ERROR))
+        errorView.text = desc.error
+        errorRow.visibility = if (desc.error == null) View.GONE else View.VISIBLE
     }
 
-    private void setupBlobCountView(SlobDescriptor desc, long blobCount, boolean available, View view, Resources r) {
-        TextView blobCountView = view.findViewById(R.id.dictionary_blob_count);
-        blobCountView.setEnabled(available);
-        blobCountView.setVisibility(desc.error == null ? View.VISIBLE : View.GONE);
-
-        blobCountView.setText(format(Locale.getDefault(),
-                r.getQuantityString(R.plurals.dict_item_count, (int) blobCount), blobCount));
+    private fun setupBlobCountView(
+        desc: SlobDescriptor,
+        blobCount: Long,
+        available: Boolean,
+        view: View,
+        r: Resources
+    ) {
+        val blobCountView: TextView = view.findViewById(R.id.dictionary_blob_count)
+        blobCountView.apply {
+            isEnabled = available
+            visibility = if (desc.error == null) View.VISIBLE else View.GONE
+            text = String.format(
+                Locale.getDefault(),
+                r.getQuantityString(R.plurals.dict_item_count, blobCount.toInt()), blobCount
+            )
+        }
     }
 
-    private void setupCopyrightView(SlobDescriptor desc, boolean available, View view) {
-        View copyrightRow = view.findViewById(R.id.dictionary_copyright_row);
-
-        ImageView copyrightIcon = view.findViewById(R.id.dictionary_copyright_icon);
-        copyrightIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_COPYRIGHT));
-
-        TextView copyrightView = view.findViewById(R.id.dictionary_copyright);
-        String copyright = desc.tags.get("copyright");
-        copyrightView.setText(copyright);
-
-        copyrightRow.setVisibility(Util.isBlank(copyright) ? View.GONE : View.VISIBLE);
-        copyrightRow.setEnabled(available);
+    private fun setupCopyrightView(desc: SlobDescriptor, available: Boolean, view: View) {
+        val copyrightRow = view.findViewById<View>(R.id.dictionary_copyright_row)
+        val copyrightIcon = view.findViewById<ImageView>(R.id.dictionary_copyright_icon)
+        val copyrightView = view.findViewById<TextView>(R.id.dictionary_copyright)
+        copyrightIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_COPYRIGHT))
+        val copyright = desc.tags["copyright"]
+        copyrightView.text = copyright
+        copyrightRow.visibility =
+            if (Util.isBlank(copyright)) View.GONE else View.VISIBLE
+        copyrightRow.isEnabled = available
     }
 
-    private void setupSourceView(SlobDescriptor desc, boolean available, View view) {
-        View sourceRow = view.findViewById(R.id.dictionary_license_row);
+    private fun setupSourceView(desc: SlobDescriptor, available: Boolean, view: View) {
+        val source = desc.tags["source"]
+        val visibility = if (Util.isBlank(source)) View.GONE else View.VISIBLE
+        val sourceHtml: CharSequence = Html.fromHtml(String.format(hrefTemplate, source, source))
 
-        ImageView sourceIcon = view.findViewById(R.id.dictionary_source_icon);
-        sourceIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_EXTERNAL_LINK));
-
-        TextView sourceView = view.findViewById(R.id.dictionary_source);
-        String source = desc.tags.get("source");
-        CharSequence sourceHtml = Html.fromHtml(String.format(hrefTemplate, source, source));
-        sourceView.setText(sourceHtml);
-        sourceView.setTag(source);
-
-        int visibility = Util.isBlank(source) ? View.GONE : View.VISIBLE;
+        val sourceRow: View = view.findViewById(R.id.dictionary_license_row)
+        val sourceIcon: ImageView = view.findViewById(R.id.dictionary_source_icon)
+        val sourceView: TextView = view.findViewById(R.id.dictionary_source)
+        sourceIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_EXTERNAL_LINK))
+        sourceView.text = sourceHtml
+        sourceView.tag = source
         //Setting visibility on layout seems to have no effect
         //if one of the children is a link
-        sourceIcon.setVisibility(visibility);
-        sourceView.setVisibility(visibility);
-        sourceRow.setVisibility(visibility);
-        sourceRow.setEnabled(available);
+        sourceIcon.visibility = visibility
+        sourceView.visibility = visibility
+        sourceRow.visibility = visibility
+        sourceRow.isEnabled = available
     }
 
-    private void setupLicenseView(SlobDescriptor desc, boolean available, View view) {
-        View licenseRow = view.findViewById(R.id.dictionary_license_row);
-
-        ImageView licenseIcon = view.findViewById(R.id.dictionary_license_icon);
-        licenseIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_LICENSE));
-
-        TextView licenseView = view.findViewById(R.id.dictionary_license);
-        String licenseName = desc.tags.get("license.name");
-        String licenseUrl = desc.tags.get("license.url");
-        CharSequence license;
-        if (Util.isBlank(licenseUrl)) {
-            license = licenseName;
-        } else {
-            if (Util.isBlank(licenseName)) {
-                licenseName = licenseUrl;
+    private fun setupLicenseView(desc: SlobDescriptor, available: Boolean, view: View) {
+        val licenseName = desc.tags["license.name"]
+        val licenseUrl = desc.tags["license.url"]
+        val license: CharSequence? = when {
+            Util.isBlank(licenseUrl) -> licenseName
+            Util.isBlank(licenseName) -> {
+                Html.fromHtml(String.format(hrefTemplate, licenseUrl, licenseUrl))
             }
-            license = Html.fromHtml(String.format(hrefTemplate, licenseUrl, licenseName));
+            else -> {
+                Html.fromHtml(String.format(hrefTemplate, licenseUrl, licenseName))
+            }
         }
-        licenseView.setText(license);
-        licenseView.setTag(licenseUrl);
+        val visibility =
+            if (licenseName.isNullOrEmpty() && licenseUrl.isNullOrEmpty()) View.GONE else View.VISIBLE
 
-        int visibility = (Util.isBlank(licenseName) && Util.isBlank(licenseUrl)) ? View.GONE : View.VISIBLE;
-        licenseIcon.setVisibility(visibility);
-        licenseView.setVisibility(visibility);
-        licenseRow.setVisibility(visibility);
-        licenseRow.setEnabled(available);
+        val licenseRow: View = view.findViewById(R.id.dictionary_license_row)
+        val licenseIcon: ImageView = view.findViewById(R.id.dictionary_license_icon)
+        val licenseView: TextView = view.findViewById(R.id.dictionary_license)
+        licenseIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_LICENSE))
+        licenseView.text = license
+        licenseView.tag = licenseUrl
+        licenseIcon.visibility = visibility
+        licenseView.visibility = visibility
+        licenseRow.visibility = visibility
+        licenseRow.isEnabled = available
     }
 
-    private void forget(final int position) {
-        SlobDescriptor desc = data.get(position);
-        final String label = desc.getLabel();
-        String message = context.getString(R.string.dictionaries_confirm_forget, label);
-
-        deleteConfirmationDialog = new AlertDialog.Builder(context)
+    private fun forget(position: Int) {
+        val desc = data[position]
+        val label = desc.label
+        val message = context?.getString(R.string.dictionaries_confirm_forget, label)
+        deleteConfirmationDialog = context?.let {
+            AlertDialog.Builder(it)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("")
                 .setMessage(message)
-                .setPositiveButton(android.R.string.yes, (dialog, which) -> data.remove(position))
-                .setNegativeButton(android.R.string.no, null)
-                .create();
-        deleteConfirmationDialog.setOnDismissListener(dialogInterface -> deleteConfirmationDialog = null);
-        deleteConfirmationDialog.show();
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    data.removeAt(position)
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .setOnDismissListener { deleteConfirmationDialog = null }
+                .create()
+                .apply { show() }
+        }
     }
 
-    @Override
-    public long getItemId(int position) {
-        return position;
+    override fun getItemId(position: Int): Long = position.toLong()
+
+    override fun getItem(position: Int): Any = data[position]
+
+    override fun getCount(): Int = data.size
+
+    companion object {
+        private val TAG = DictionaryListAdapter::class.java.name
+        private const val hrefTemplate = "<a href='%1\$s'>%2\$s</a>"
     }
 
-    @Override
-    public Object getItem(int position) {
-        return data.get(position);
-    }
+    init {
+        val observer: DataSetObserver = object : DataSetObserver() {
+            override fun onChanged() {
+                notifyDataSetChanged()
+            }
 
-    @Override
-    public int getCount() {
-        return data.size();
+            override fun onInvalidated() {
+                notifyDataSetInvalidated()
+            }
+        }
+        data.registerDataSetObserver(observer)
+        openUrlOnClick = View.OnClickListener { v: View ->
+            val url = v.tag as String
+            if (url.isNotBlank()) {
+                try {
+                    val uri = Uri.parse(url)
+                    val browserIntent = Intent(Intent.ACTION_VIEW, uri)
+                    v.context.startActivity(browserIntent)
+                } catch (e: Exception) {
+                    Log.d(TAG, "Failed to launch browser with url $url", e)
+                }
+            }
+        }
     }
-
 }
