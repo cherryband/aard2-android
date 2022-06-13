@@ -1,226 +1,200 @@
-package space.cherryband.ari.ui;
+package space.cherryband.ari.ui
 
-import android.app.Activity;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
+import android.app.Activity
+import android.content.DialogInterface
+import android.graphics.drawable.Drawable
+import android.os.Bundle
+import android.view.*
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.Fragment
+import space.cherryband.ari.AriApplication.Companion.getApp
+import space.cherryband.ari.R
+import space.cherryband.ari.util.IconMaker
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.appcompat.app.AlertDialog;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.webkit.WebChromeClient;
-import android.webkit.WebView;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-
-import space.cherryband.ari.AriApplication;
-import space.cherryband.ari.R;
-import space.cherryband.ari.util.IconMaker;
-
-
-public class ArticleFragment extends Fragment {
-
-    public static final String ARG_URL = "articleUrl";
-
-    private ArticleWebView view;
-    private MenuItem        miBookmark;
-    private MenuItem        miFullscreen;
-    private Drawable        icBookmark;
-    private Drawable        icBookmarkO;
-    private Drawable        icFullscreen;
-    private String          url;
-
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Activity activity = getActivity();
-        icBookmark =  IconMaker.actionBar(activity, IconMaker.IC_BOOKMARK);
-        icBookmarkO = IconMaker.actionBar(activity, IconMaker.IC_BOOKMARK_O);
-        icFullscreen = IconMaker.actionBar(activity, IconMaker.IC_FULLSCREEN);
-        setHasOptionsMenu(true);
+class ArticleFragment : Fragment() {
+    var webView: ArticleWebView? = null
+        private set
+    private var miBookmark: MenuItem? = null
+    private var miFullscreen: MenuItem? = null
+    private var icBookmark: Drawable? = null
+    private var icBookmarkO: Drawable? = null
+    private var icFullscreen: Drawable? = null
+    private var url: String? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val activity: Activity? = activity
+        icBookmark = IconMaker.actionBar(activity, IconMaker.IC_BOOKMARK)
+        icBookmarkO = IconMaker.actionBar(activity, IconMaker.IC_BOOKMARK_O)
+        icFullscreen = IconMaker.actionBar(activity, IconMaker.IC_FULLSCREEN)
+        setHasOptionsMenu(true)
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         //Looks like this may be called multiple times with the same menu
         //for some reason when activity is restored, so need to clear
         //to avoid duplicates
-        menu.clear();
-        inflater.inflate(R.menu.article, menu);
-        miBookmark = menu.findItem(R.id.action_bookmark_article);
-        miFullscreen = menu.findItem(R.id.action_fullscreen);
-        miFullscreen.setVisible(false);
-        miFullscreen.setEnabled(false);
+        menu.clear()
+        inflater.inflate(R.menu.article, menu)
+        miBookmark = menu.findItem(R.id.action_bookmark_article)
+        miFullscreen = menu.findItem(R.id.action_fullscreen).apply {
+            isVisible = false
+            isEnabled = false
+        }
     }
 
-    private void displayBookmarked(boolean value) {
+    private fun displayBookmarked(value: Boolean) {
         if (miBookmark == null) {
-            return;
+            return
         }
         if (value) {
-            miBookmark.setChecked(true);
-            miBookmark.setIcon(icBookmark);
+            miBookmark!!.isChecked = true
+            miBookmark!!.icon = icBookmark
         } else {
-            miBookmark.setChecked(false);
-            miBookmark.setIcon(icBookmarkO);
+            miBookmark!!.isChecked = false
+            miBookmark!!.icon = icBookmarkO
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
-        if (itemId == R.id.action_find_in_page) {
-            view.showFindDialog(null, true);
-            return true;
-        }
-        if (itemId == R.id.action_bookmark_article) {
-            AriApplication app = AriApplication.Companion.getApp(getActivity());
-            if (this.url != null) {
-                if (item.isChecked()) {
-                    app.removeBookmark(this.url);
-                    displayBookmarked(false);
-                } else {
-                    app.addBookmark(this.url);
-                    displayBookmarked(true);
-                }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_find_in_page -> {
+                webView?.showFindDialog(null, true)
+                true
             }
-            return true;
-        }
-        if (itemId == R.id.action_fullscreen) {
-            ((ArticleCollectionActivity) requireActivity()).toggleFullScreen();
-            return true;
-        }
-        if (itemId == R.id.action_zoom_in) {
-            view.textZoomIn();
-            return true;
-        }
-        if (itemId == R.id.action_zoom_out) {
-            view.textZoomOut();
-            return true;
-        }
-        if (itemId == R.id.action_zoom_reset) {
-            view.resetTextZoom();
-            return true;
-        }
-        if (itemId == R.id.action_load_remote_content) {
-            view.forceLoadRemoteContent = true;
-            view.reload();
-            return true;
-        }
-        if (itemId == R.id.action_select_style) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-            final String[] styleTitles = view.getAvailableStyles();
-            builder.setTitle(R.string.select_style)
-                    .setItems(styleTitles, (dialog, which) -> {
-                        String title = styleTitles[which];
-                        view.saveStylePref(title);
-                        view.applyStylePref();
-                    });
-            AlertDialog dialog = builder.create();
-            dialog.show();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        Bundle args = getArguments();
-        this.url = args == null ? null : args.getString(ARG_URL);
-        if (url == null) {
-            View layout = inflater.inflate(R.layout.empty_view, container, false);
-            TextView textView = layout.findViewById(R.id.empty_text);
-            textView.setText("");
-            ImageView icon = layout.findViewById(R.id.empty_icon);
-            icon.setImageDrawable(IconMaker.emptyView(getActivity(),
-                    IconMaker.IC_BAN));
-            this.setHasOptionsMenu(false);
-            return layout;
-        }
-
-        View layout = inflater.inflate(R.layout.article_view, container, false);
-        final ProgressBar progressBar = layout.findViewById(R.id.webViewPogress);
-        view = layout.findViewById(R.id.webView);
-        view.restoreState(savedInstanceState);
-        view.loadUrl(url);
-        view.setWebChromeClient(new WebChromeClient() {
-            public void onProgressChanged(WebView view, final int newProgress) {
-                final Activity activity = getActivity();
-                if (activity != null) {
-                    activity.runOnUiThread(() -> {
-                        progressBar.setProgress(newProgress);
-                        if (newProgress >= progressBar.getMax()) {
-                            progressBar.setVisibility(ViewGroup.GONE);
+            R.id.action_bookmark_article -> {
+                val app = getApp(activity)
+                if (url != null) {
+                    if (item.isChecked) {
+                        app.removeBookmark(url)
+                        displayBookmarked(false)
+                    } else {
+                        app.addBookmark(url)
+                        displayBookmarked(true)
+                    }
+                }
+                true
+            }
+            R.id.action_fullscreen -> {
+                (requireActivity() as ArticleCollectionActivity).toggleFullScreen()
+                true
+            }
+            R.id.action_zoom_in -> {
+                webView?.textZoomIn()
+                true
+            }
+            R.id.action_zoom_out -> {
+                webView?.textZoomOut()
+                true
+            }
+            R.id.action_zoom_reset -> {
+                webView?.resetTextZoom()
+                true
+            }
+            R.id.action_load_remote_content -> {
+                webView?.forceLoadRemoteContent = true
+                webView?.reload()
+                true
+            }
+            R.id.action_select_style -> {
+                webView?.let{
+                    val styleTitles = it.availableStyles
+                    AlertDialog.Builder(requireActivity())
+                        .setTitle(R.string.select_style)
+                        .setItems(styleTitles) { _, which: Int ->
+                            val title = styleTitles[which]
+                            it.saveStylePref(title)
+                            it.applyStylePref()
                         }
-                    });
+                        .create()
+                        .show()
+                }
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val args = arguments
+        url = args?.getString(ARG_URL)
+        if (url == null) {
+            val layout = inflater.inflate(R.layout.empty_view, container, false)
+            val textView:TextView = layout.findViewById(R.id.empty_text)
+            textView.text = ""
+            val icon: ImageView = layout.findViewById(R.id.empty_icon)
+            icon.setImageDrawable(IconMaker.emptyView(activity, IconMaker.IC_BAN))
+            setHasOptionsMenu(false)
+            return layout
+        }
+        val layout = inflater.inflate(R.layout.article_view, container, false)
+        val progressBar: ProgressBar = layout.findViewById(R.id.webViewPogress)
+        webView = layout.findViewById<ArticleWebView>(R.id.webView).apply {
+            restoreState(savedInstanceState!!)
+            loadUrl(url!!)
+            webChromeClient = object : WebChromeClient() {
+                override fun onProgressChanged(view: WebView, newProgress: Int) {
+                    val activity: Activity? = activity
+                    activity?.runOnUiThread {
+                        progressBar.progress = newProgress
+                        if (newProgress >= progressBar.max) {
+                            progressBar.visibility = ViewGroup.GONE
+                        }
+                    }
                 }
             }
-        });
-
-        return layout;
+        }
+        return layout
     }
 
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        applyTextZoomPref();
-        applyStylePref();
+    override fun onResume() {
+        super.onResume()
+        applyTextZoomPref()
+        applyStylePref()
     }
 
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        if (this.url == null) {
-            miBookmark.setVisible(false);
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+        if (url == null) {
+            miBookmark!!.isVisible = false
         } else {
-            AriApplication app = AriApplication.Companion.getApp(getActivity());
+            val app = getApp(activity)
             try {
-                boolean bookmarked = app.isBookmarked(this.url);
-                displayBookmarked(bookmarked);
-            } catch (Exception ex) {
-                miBookmark.setVisible(false);
+                val bookmarked = app.isBookmarked(url)
+                displayBookmarked(bookmarked)
+            } catch (ex: Exception) {
+                miBookmark!!.isVisible = false
             }
         }
-        applyTextZoomPref();
-        applyStylePref();
-        miFullscreen.setIcon(icFullscreen);
+        applyTextZoomPref()
+        applyStylePref()
+        miFullscreen!!.icon = icFullscreen
     }
 
-    void applyTextZoomPref() {
-        if (view != null) {
-            view.applyTextZoomPref();
-        }
+    fun applyTextZoomPref() {
+        webView?.applyTextZoomPref()
     }
 
-    void applyStylePref() {
-        if (view != null) {
-            view.applyStylePref();
-        }
+    private fun applyStylePref() {
+        webView?.applyStylePref()
     }
 
-    public ArticleWebView getWebView() {
-        return view;
+    override fun onDestroy() {
+        webView?.destroy()
+        webView = null
+        miFullscreen = null
+        miBookmark = null
+        super.onDestroy()
     }
 
-    @Override
-    public void onDestroy() {
-        if (view != null) {
-            view.destroy();
-            view = null;
-        }
-        miFullscreen = null;
-        miBookmark = null;
-        super.onDestroy();
+    companion object {
+        const val ARG_URL = "articleUrl"
     }
-
 }

@@ -440,11 +440,11 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
         if (af != null) {
             val webView = af.webView
             if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-                webView.pageUp(true)
+                webView?.pageUp(true)
                 return true
             }
             if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-                webView.pageDown(true)
+                webView?.pageDown(true)
                 return true
             }
         }
