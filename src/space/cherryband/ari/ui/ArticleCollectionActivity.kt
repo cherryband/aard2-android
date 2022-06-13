@@ -5,37 +5,36 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
-import android.database.DataSetObserver
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
-import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.View.OnSystemUiVisibilityChangeListener
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NavUtils
 import androidx.core.app.TaskStackBuilder
+import androidx.core.view.get
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.fragment.app.findFragment
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.PagerTitleStrip
-import androidx.viewpager.widget.ViewPager
-import androidx.viewpager.widget.ViewPager.OnPageChangeListener
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import itkach.slob.Slob
 import itkach.slob.Slob.PeekableIterator
-import space.cherryband.ari.*
+import space.cherryband.ari.AriApplication
+import space.cherryband.ari.R
 import space.cherryband.ari.data.BlobDescriptor
 import space.cherryband.ari.util.Util
 
 class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChangeListener,
     OnSharedPreferenceChangeListener {
     var articleCollectionPagerAdapter: ArticleCollectionPagerAdapter? = null
-    private lateinit var viewPager: ViewPager
+    private var viewPager: ViewPager2? = null
     private lateinit var app: AriApplication
 
     private fun toBlobWithFragment(fragment: String) : (Any?) -> Slob.Blob?
@@ -99,7 +98,7 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
             return
         }
         articleCollectionPagerAdapter = adapter
-        val count = articleCollectionPagerAdapter!!.count
+        val count = articleCollectionPagerAdapter!!.itemCount
         if (count == 0) {
             toastAndQuit(R.string.article_collection_nothing_found)
             return
@@ -111,26 +110,25 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
         setContentView(R.layout.activity_article_collection)
         val titleStrip = findViewById<PagerTitleStrip>(R.id.pager_title_strip)
         titleStrip.visibility = if (count == 1) ViewGroup.GONE else ViewGroup.VISIBLE
-        viewPager = findViewById(R.id.pager)
-        viewPager.adapter = articleCollectionPagerAdapter
-        viewPager.addOnPageChangeListener(object : OnPageChangeListener {
-            override fun onPageScrollStateChanged(arg0: Int) {}
-            override fun onPageScrolled(arg0: Int, arg1: Float, arg2: Int) {}
-            override fun onPageSelected(position: Int) {
-                updateTitle(position)
-                runOnUiThread {
-                    val fragment =
-                        articleCollectionPagerAdapter!!.getItem(position) as ArticleFragment
-                    fragment.applyTextZoomPref()
+        viewPager = findViewById<ViewPager2>(R.id.pager)
+            viewPager?.let{
+            it.adapter = articleCollectionPagerAdapter
+            it.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) {
+                    updateTitle(position)
+                    runOnUiThread {
+                        val fragment = it[position].findFragment<ArticleFragment>()
+                        fragment.applyTextZoomPref()
+                    }
                 }
-            }
-        })
-        viewPager.currentItem = position
+            })
+            it.currentItem = position
+        }
         titleStrip.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10f)
         updateTitle(position)
-        articleCollectionPagerAdapter!!.registerDataSetObserver(object : DataSetObserver() {
+        articleCollectionPagerAdapter!!.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onChanged() {
-                if (articleCollectionPagerAdapter!!.count == 0) {
+                if (articleCollectionPagerAdapter!!.itemCount == 0) {
                     finish()
                 }
             }
@@ -151,37 +149,31 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
         data.setData(result)
         val hasFragment = !Util.isBlank(bd.fragment)
         return ArticleCollectionPagerAdapter(
-            app, data,
-            if (hasFragment) toBlobWithFragment(bd.fragment) else blobToBlob,
-            supportFragmentManager
+            app, data.list,
+            if (hasFragment) toBlobWithFragment(bd.fragment) else blobToBlob
         )
     }
 
     private fun createFromLastResult(app: AriApplication): ArticleCollectionPagerAdapter {
         return ArticleCollectionPagerAdapter(
             app,
-            app.lastResult,
-            blobToBlob,
-            supportFragmentManager
+            app.lastResult.list,
+            blobToBlob
         )
     }
 
     private fun createFromBookmarks(app: AriApplication): ArticleCollectionPagerAdapter {
         return ArticleCollectionPagerAdapter(
             app,
-            BlobDescriptorListAdapter(app.bookmarks),
-            { item: Any? -> app.bookmarks.resolve(item as BlobDescriptor?) },
-            supportFragmentManager
-        )
+            app.bookmarks
+        ) { item: Any? -> app.bookmarks.resolve(item as BlobDescriptor?) }
     }
 
     private fun createFromHistory(app: AriApplication): ArticleCollectionPagerAdapter {
         return ArticleCollectionPagerAdapter(
             app,
-            BlobDescriptorListAdapter(app.history),
-            { item: Any? -> app.history.resolve(item as BlobDescriptor?) },
-            supportFragmentManager
-        )
+            app.history
+        ) { item: Any? -> app.history.resolve(item as BlobDescriptor?) }
     }
 
     private fun createFromIntent(
@@ -228,9 +220,7 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
             val result = stemLookup(app, lookupKey, preferredSlobId)
             data.setData(result)
         }
-        return ArticleCollectionPagerAdapter(
-            app, data, blobToBlob, supportFragmentManager
-        )
+        return ArticleCollectionPagerAdapter(app, data.list, blobToBlob)
     }
 
     private fun stemLookup(
@@ -259,7 +249,7 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
     }
 
     private fun updateTitle(position: Int) {
-        Log.d("updateTitle", "" + position + " count: " + articleCollectionPagerAdapter!!.count)
+        Log.d("updateTitle", "" + position + " count: " + articleCollectionPagerAdapter!!.itemCount)
         val blob = articleCollectionPagerAdapter?.get(position)
         val pageTitle = articleCollectionPagerAdapter!!.getPageTitle(position)
         Log.d("updateTitle", "" + blob)
@@ -331,8 +321,7 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
 
     override fun onDestroy() {
         onDestroyCalled = true
-        viewPager.adapter = null
-        articleCollectionPagerAdapter?.destroy()
+        viewPager?.adapter = null
         app.pop(this)
         super.onDestroy()
     }
@@ -370,7 +359,7 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
 
     private val isVolumeForNavDisabled: Boolean
         get() = !app.useVolumeForNav
-
+/*
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         if (event.isCanceled) {
             return true
@@ -410,7 +399,7 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
                     val scrolled = webView.pageDown(false)
                     if (!scrolled) {
                         val current = viewPager.currentItem
-                        if (current < articleCollectionPagerAdapter!!.count - 1) {
+                        if (current < articleCollectionPagerAdapter!!.itemCount - 1) {
                             viewPager.currentItem = current + 1
                         }
                     }
@@ -450,40 +439,17 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
         }
         return super.onKeyLongPress(keyCode, event)
     }
+*/
 
 
-    class ArticleCollectionPagerAdapter(
+    inner class ArticleCollectionPagerAdapter(
         private var app: AriApplication?,
-        private var data: BaseAdapter?,
-        private val toBlob: (Any?) -> Slob.Blob?,
-        fm: FragmentManager
-    ) : FragmentStatePagerAdapter(fm) {
-        private var count: Int = data!!.count
-        private val observer = object : DataSetObserver() {
-            override fun onChanged() {
-                count = data!!.count
-                notifyDataSetChanged()
-            }
-        }
-        var primaryItem: ArticleFragment? = null
-            private set
+        private var data: List<Any>?,
+        private val toBlob: (Any?) -> Slob.Blob?
+    ) : FragmentStateAdapter(this) {
+        private var count: Int = data!!.size
 
-        init {
-            data!!.registerDataSetObserver(observer)
-        }
-
-        fun destroy() {
-            data!!.unregisterDataSetObserver(observer)
-            data = null
-            app = null
-        }
-
-        override fun setPrimaryItem(container: ViewGroup, position: Int, `object`: Any) {
-            super.setPrimaryItem(container, position, `object`)
-            primaryItem = `object` as ArticleFragment
-        }
-
-        override fun getItem(i: Int): Fragment {
+        override fun createFragment(i: Int): Fragment {
             val fragment: Fragment = ArticleFragment()
             val blob = get(i)
             if (blob != null) {
@@ -495,13 +461,11 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
             return fragment
         }
 
-        override fun getCount(): Int = count
+        override fun getItemCount(): Int = count
 
-        operator fun get(position: Int): Slob.Blob? = toBlob(data!!.getItem(position))
-
-        override fun getPageTitle(position: Int): CharSequence? {
-            if (position < data!!.count) {
-                val item = data!!.getItem(position)
+        fun getPageTitle(position: Int): CharSequence? {
+            if (position < data!!.size) {
+                val item = data!![position]
                 if (item is BlobDescriptor) {
                     return item.key
                 }
@@ -512,12 +476,7 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
             return "???"
         }
 
-        //this is needed so that fragment is properly updated
-        //if underlying data changes (such as on unbookmark)
-        //https://code.google.com/p/android/issues/detail?id=19001
-        override fun getItemPosition(`object`: Any): Int {
-            return POSITION_NONE
-        }
+        operator fun get(position: Int): Slob.Blob? = toBlob(data!![position])
     }
 
     companion object {

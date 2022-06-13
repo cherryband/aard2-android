@@ -12,6 +12,7 @@ import android.net.Uri
 import android.util.Log
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -179,11 +180,12 @@ class AriApplication : Application() {
         get() = prefs().getString(PREF_UI_THEME, PREF_UI_THEME_SYSTEM)
 
     fun installTheme(activity: AppCompatActivity) {
-        when (preferredTheme) {
-            PREF_UI_THEME_DARK -> activity.setTheme(R.style.Theme_App_Dark)
-            PREF_UI_THEME_LIGHT -> activity.setTheme(R.style.Theme_App_Light)
-            else -> activity.setTheme(R.style.Theme_App)
+        activity.delegate.localNightMode = when (preferredTheme) {
+            PREF_UI_THEME_DARK -> AppCompatDelegate.MODE_NIGHT_YES
+            PREF_UI_THEME_LIGHT -> AppCompatDelegate.MODE_NIGHT_YES
+            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         }
+        activity.delegate.applyDayNight()
     }
 
     fun push(activity: AppCompatActivity) {

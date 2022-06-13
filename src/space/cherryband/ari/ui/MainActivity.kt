@@ -10,6 +10,8 @@ import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.MenuProvider
 import androidx.core.view.doOnAttach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -18,7 +20,8 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationBarView
-import space.cherryband.ari.*
+import space.cherryband.ari.AriApplication
+import space.cherryband.ari.R
 import space.cherryband.ari.data.BlobDescriptorList
 import space.cherryband.ari.util.Clipboard
 import space.cherryband.ari.util.IconMaker
@@ -35,6 +38,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     )
     private lateinit var app: AriApplication
     private var initTab: Int = 2
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = application as AriApplication
@@ -54,8 +58,14 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
         app.prefs()
             .registerOnSharedPreferenceChangeListener { _, key: String ->
+                Log.d("cherry", "pref changed: $key")
                 if (key == AriApplication.PREF_UI_THEME) {
-                    recreate()
+                    delegate.localNightMode = when (app.preferredTheme) {
+                        AriApplication.PREF_UI_THEME_DARK ->  AppCompatDelegate.MODE_NIGHT_YES
+                        AriApplication.PREF_UI_THEME_LIGHT -> AppCompatDelegate.MODE_NIGHT_YES
+                        else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                    }
+                    delegate.applyDayNight()
                 }
             }
 
@@ -95,6 +105,9 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
                 switchNavBar(position)
             }
         })
+        appPageAdapter.item
+            .filter { it is MenuProvider }
+            .forEach { addMenuProvider(it as MenuProvider) }
         viewPager.doOnAttach {
             viewPager.adapter = appPageAdapter
             switchTab(initTab, false)
@@ -143,7 +156,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     override fun onBackPressed() {
         val currentItem = viewPager.currentItem
 
-        val frag = appPageAdapter.getItem(currentItem)
+        val frag = appPageAdapter.item[currentItem]
         Log.d(TAG, "current tab: $currentItem")
         if (frag is BlobDescriptorListFragment && frag.isFilterExpanded) {
             Log.d(TAG, "Filter is expanded")
@@ -170,17 +183,20 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
     private fun switchTab(to: Int, smoothScroll: Boolean = true) {
         val from = viewPager.currentItem
+        Log.d("cherry", "from: $from")
+        val fromFrag = appPageAdapter.item[from]
+            fromFrag.setMenuVisibility(false)
         viewPager.setCurrentItem(to, smoothScroll)
+        val toFrag = appPageAdapter.item[to]
         if (viewPager.currentItem == 2) {
             floatingActionButton.show()
         } else {
             floatingActionButton.hide()
         }
-
-        val frag = appPageAdapter.getItem(from)
-        if (frag is BaseListFragment) {
-            frag.finishActionMode()
+        if (toFrag is BaseListFragment) {
+            toFrag.finishActionMode()
         }
+        toFrag.setMenuVisibility(true)
         if (from == 2) {
             val v = this.currentFocus
             if (v != null) {
@@ -192,7 +208,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
     internal class BookmarksFragment : BlobDescriptorListFragment() {
         override val descriptorList: BlobDescriptorList
-            get() = AriApplication.getApp(requireActivity()).bookmarks
+            get() = (context?.applicationContext as AriApplication).bookmarks
         override val itemClickAction = "showBookmarks"
         override val emptyIcon: Char = IconMaker.IC_BOOKMARK
         override val emptyText
@@ -203,7 +219,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
     internal class HistoryFragment : BlobDescriptorListFragment() {
         override val descriptorList: BlobDescriptorList
-            get() = AriApplication.getApp(requireActivity()).history
+            get() = (context?.applicationContext as AriApplication).history
         override val itemClickAction = "showHistory"
         override val emptyIcon: Char = IconMaker.IC_HISTORY
         override val emptyText
@@ -213,16 +229,13 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     }
 
     internal class AppPageAdapter(fa: FragmentActivity): FragmentStateAdapter(fa) {
-        private val fragments: Array<Fragment> = arrayOf(
+        internal val item: Array<Fragment> = arrayOf(
             HistoryFragment(), BookmarksFragment(), LookupFragment(),
             DictionariesFragment(), SettingsFragment()
         )
 
-        override fun getItemCount(): Int = fragments.size
-        override fun createFragment(position: Int): Fragment {
-            return fragments[position]
-        }
-        internal fun getItem(position: Int) = fragments[position]
+        override fun getItemCount(): Int = item.size
+        override fun createFragment(position: Int) = item[position]
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

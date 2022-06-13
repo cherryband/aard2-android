@@ -1,20 +1,21 @@
 package space.cherryband.ari.ui
 
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.*
-import android.widget.AdapterView.OnItemClickListener
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import space.cherryband.ari.data.BlobDescriptorList
+import androidx.core.view.MenuProvider
+import androidx.recyclerview.selection.SelectionTracker
+import androidx.recyclerview.selection.StorageStrategy
 import space.cherryband.ari.R
+import space.cherryband.ari.data.BlobDescriptorList
 import space.cherryband.ari.util.IconMaker
 
-internal abstract class BlobDescriptorListFragment : BaseListFragment() {
+internal abstract class BlobDescriptorListFragment : BaseListFragment(), MenuProvider {
     private var icFilter: Drawable? = null
     private var icClock: Drawable? = null
     private var icList: Drawable? = null
@@ -34,6 +35,7 @@ internal abstract class BlobDescriptorListFragment : BaseListFragment() {
 
     abstract val descriptorList: BlobDescriptorList
     abstract val itemClickAction: String?
+    private lateinit var selectionTracker: SelectionTracker<String>
     override fun setSelectionMode(selectionMode: Boolean) {
         listAdapter!!.isSelectionMode = selectionMode
     }
@@ -45,10 +47,9 @@ internal abstract class BlobDescriptorListFragment : BaseListFragment() {
         requireActivity().getSharedPreferences(preferencesNS, AppCompatActivity.MODE_PRIVATE)
 
     override fun onSelectionActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
-        val listView = listView
         val itemId = item!!.itemId
         if (itemId == R.id.blob_descriptor_delete) {
-            val count = listView.checkedItemCount
+            val count = selectionTracker.selection.size()
             val countStr = resources.getQuantityString(
                 deleteConfirmationItemCountResId, count, count
             )
@@ -67,10 +68,7 @@ internal abstract class BlobDescriptorListFragment : BaseListFragment() {
                 .create().also { it.show() }
             return true
         } else if (itemId == R.id.blob_descriptor_select_all) {
-            val itemCount = listView.count
-            for (i in itemCount - 1 downTo -1 + 1) {
-                listView.setItemChecked(i, true)
-            }
+            descriptorList.map { it.blobId }.forEach(selectionTracker::select)
             return true
         }
         return false
@@ -87,41 +85,49 @@ internal abstract class BlobDescriptorListFragment : BaseListFragment() {
         val sortOrder = BlobDescriptorList.SortOrder.valueOf(sortOrderStr!!)
         val sortDir = p.getBoolean(PREF_SORT_DIRECTION, false)
         descriptorList.setSort(sortOrder, sortDir)
-        listAdapter = BlobDescriptorListAdapter(descriptorList)
+        listAdapter = BlobDescriptorListAdapter(descriptorList, itemClickAction)
         icFilter = IconMaker.actionBar(activity, IconMaker.IC_FILTER)
         icClock = IconMaker.actionBar(activity, IconMaker.IC_CLOCK)
         icList = IconMaker.actionBar(activity, IconMaker.IC_LIST)
         icArrowUp = IconMaker.actionBar(activity, IconMaker.IC_SORT_ASC)
         icArrowDown = IconMaker.actionBar(activity, IconMaker.IC_SORT_DESC)
-        listView.onItemClickListener =
-            OnItemClickListener { _, _, position: Int, _ ->
-                Intent(
-                    activity,
-                    ArticleCollectionActivity::class.java
-                ).apply {
-                    action = itemClickAction
-                    putExtra("position", position)
-                }.let { startActivity(it) }
+        listView.adapter = listAdapter
+
+        selectionTracker = SelectionTracker.Builder(
+            "my-selection-id",
+            listView,
+            BlobDescriptorListKeyProvider(descriptorList),
+            BlobDescriptorDetailsLookup(listView),
+            StorageStrategy.createStringStorage()
+        ).build()
+
+        selectionTracker.addObserver(object : SelectionTracker.SelectionObserver<String>(){
+            override fun onSelectionRefresh() {
+                super.onSelectionRefresh()
+
             }
-        setListAdapter(listAdapter)
+
+            override fun onSelectionRestored() {
+                super.onSelectionRestored()
+                if (!selectionTracker.selection.isEmpty) {
+                    requireActivity().startActionMode(actionModeCallback)
+                }
+            }
+        })
     }
 
     private fun deleteSelectedItems() {
-        val checkedItems = listView.checkedItemPositions
-        for (i in checkedItems.size() - 1 downTo -1 + 1) {
-            val position = checkedItems.keyAt(i)
-            val checked = checkedItems[position]
-            if (checked) {
-                descriptorList.removeAt(position)
-            }
+        val checkedItems = selectionTracker.selection
+        checkedItems.forEach {
+            descriptorList.remove(it)
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.blob_descriptor_list, menu)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
+    override fun onPrepareMenu(menu: Menu) {
         val list = descriptorList
         miFilter = menu.findItem(R.id.action_filter)
         miFilter?.icon = icFilter
@@ -141,7 +147,7 @@ internal abstract class BlobDescriptorListFragment : BaseListFragment() {
         })
         setSortOrder(menu.findItem(R.id.action_sort_order), list.sortOrder)
         setAscending(menu.findItem(R.id.action_sort_asc), list.isAscending)
-        super.onPrepareOptionsMenu(menu)
+        super.onPrepareMenu(menu)
     }
 
     private fun setSortOrder(mi: MenuItem, order: BlobDescriptorList.SortOrder) {
@@ -178,7 +184,7 @@ internal abstract class BlobDescriptorListFragment : BaseListFragment() {
             .apply()
     }
 
-    override fun onOptionsItemSelected(mi: MenuItem): Boolean {
+    override fun onMenuItemSelected(mi: MenuItem): Boolean {
         val list = descriptorList
         val itemId = mi.itemId
         if (itemId == R.id.action_sort_asc) {
@@ -195,7 +201,7 @@ internal abstract class BlobDescriptorListFragment : BaseListFragment() {
             setSortOrder(mi, list.sortOrder)
             return true
         }
-        return super.onOptionsItemSelected(mi)
+        return false
     }
 
     override fun onPause() {

@@ -5,18 +5,20 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuProvider
 import space.cherryband.ari.*
 import space.cherryband.ari.util.Clipboard
 import space.cherryband.ari.util.IconMaker
 import java.util.*
 
 class LookupFragment : BaseListFragment(),
-    LookupListener {
+    LookupListener, MenuProvider {
     private var timer: Timer? = null
     private var searchView: SearchView? = null
 
@@ -33,13 +35,6 @@ class LookupFragment : BaseListFragment(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setBusy(false)
-        listView.onItemClickListener =
-            OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
-                Log.i("--", "Item clicked: $position")
-                Intent(activity, ArticleCollectionActivity::class.java)
-                    .putExtra("position", position)
-                    .let { startActivity(it) }
-            }
         val app = requireActivity().application as AriApplication
         listView.adapter = app.lastResult
     }
@@ -74,7 +69,7 @@ class LookupFragment : BaseListFragment(),
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         timer = Timer()
         inflater.inflate(R.menu.lookup, menu)
         val miFilter = menu.findItem(R.id.action_lookup)
@@ -88,7 +83,9 @@ class LookupFragment : BaseListFragment(),
         }
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = false
+
+    override fun onPrepareMenu(menu: Menu) {
         val activity = activity
         super.onPrepareOptionsMenu(menu)
         val app = activity!!.application as AriApplication
@@ -100,7 +97,7 @@ class LookupFragment : BaseListFragment(),
         }
         val query: CharSequence = app.lookupQuery
         searchView?.setQuery(query, true)
-        if (app.lastResult.count > 0) {
+        if (app.lastResult.itemCount > 0) {
             searchView?.clearFocus()
         }
     }
@@ -112,7 +109,7 @@ class LookupFragment : BaseListFragment(),
     }
 
     private fun setBusy(busy: Boolean) {
-        setListShown(!busy)
+        listView.visibility = if (busy) View.VISIBLE else View.INVISIBLE
         if (!busy) {
             val app = requireActivity().application as AriApplication
             val emptyText = emptyView.findViewById<TextView>(R.id.empty_text)

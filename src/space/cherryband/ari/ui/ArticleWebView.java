@@ -1,5 +1,6 @@
 package space.cherryband.ari.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -109,6 +110,7 @@ public class ArticleWebView extends SearchableWebView {
         this(context, null);
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     public ArticleWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -508,11 +510,11 @@ public class ArticleWebView extends SearchableWebView {
     private void beforeLoadUrl(String url) {
         setCurrentSlobIdFromUrl(url);
         if (!url.startsWith("javascript:")) {
-            updateBackgrounColor();
+            updateBackgroundColor();
         }
     }
 
-    private void updateBackgrounColor() {
+    private void updateBackgroundColor() {
         int color = Color.WHITE;
         String preferredStyle = getPreferredStyle().toLowerCase();
         // webview's default background may "show through" before page

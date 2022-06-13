@@ -73,11 +73,11 @@ public class IconMaker {
             int color = ContextCompat.getColor(context, typedValue.resourceId);
             return make(context, c, 16, color);
         }
-        return makeWithColorRes(context, c, 16, R.color.list_icon);
+        return makeWithColorRes(context, c, 16, R.color.md_theme_secondary);
     }
 
     public static FontDrawable errorText(Context context, char c) {
-        return makeWithColorRes(context, c, 16, android.R.color.holo_red_dark);
+        return makeWithColorRes(context, c, 16, R.color.design_default_color_error);
     }
 
     public static FontDrawable emptyView(Context context, char c) {

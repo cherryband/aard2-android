@@ -1,12 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="tab_icon">#9aaa</color>
-    <color name="actionbar_icon">#9aaa</color>
+    <color name="tab_icon">#DA848484</color>
+    <color name="actionbar_icon">#DA848484</color>
     <color name="empty_view_icon">#caaa</color>
-    <color name="list_icon">@color/secondary_color</color>
-    <color name="primary_color">#00897B</color>
-    <color name="on_primary_color">#26C6DA</color>
-    <color name="secondary_color">#F4511E</color>
-    <color name="on_secondary_color">#FFB74D</color>
+    <color name="list_icon">@color/md_theme_secondary</color>
+    <color name="md_theme_primary">#554EC2</color>
+    <color name="md_theme_onPrimary">#FFFFFF</color>
+    <color name="md_theme_primaryContainer">#E3DFFF</color>
+    <color name="md_theme_onPrimaryContainer">#110068</color>
+    <color name="md_theme_secondary">#5E5C71</color>
+    <color name="md_theme_onSecondary">#FFFFFF</color>
+    <color name="md_theme_secondaryContainer">#E3E0F9</color>
+    <color name="md_theme_onSecondaryContainer">#1A1A2C</color>
+    <color name="md_theme_tertiary">#7A5367</color>
+    <color name="md_theme_onTertiary">#FFFFFF</color>
+    <color name="md_theme_tertiaryContainer">#FFD8EA</color>
+    <color name="md_theme_onTertiaryContainer">#2F1123</color>
+    <color name="md_theme_error">#BA1A1A</color>
+    <color name="md_theme_errorContainer">#FFDAD6</color>
+    <color name="md_theme_onError">#FFFFFF</color>
+    <color name="md_theme_onErrorContainer">#410002</color>
+    <color name="md_theme_background">#FFFBFF</color>
+    <color name="md_theme_onBackground">#1C1B1F</color>
+    <color name="md_theme_surface">#FFFBFF</color>
+    <color name="md_theme_onSurface">#1C1B1F</color>
+    <color name="md_theme_surfaceVariant">#E5E1EC</color>
+    <color name="md_theme_onSurfaceVariant">#47464F</color>
+    <color name="md_theme_outline">#787680</color>
+    <color name="md_theme_inverseOnSurface">#F3EFF4</color>
+    <color name="md_theme_inverseSurface">#313034</color>
+    <color name="md_theme_inversePrimary">#C4C0FF</color>
+    <color name="md_theme_shadow">#000000</color>
+    <color name="seed">#4a42b7</color>
 </resources>
 

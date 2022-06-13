@@ -11,11 +11,12 @@ import android.view.*
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.core.view.MenuProvider
 import space.cherryband.ari.AriApplication
 import space.cherryband.ari.R
 import space.cherryband.ari.util.IconMaker
 
-class DictionariesFragment : BaseListFragment() {
+class DictionariesFragment : BaseListFragment(), MenuProvider {
     private var listAdapter: DictionaryListAdapter? = null
     override val emptyIcon: Char = IconMaker.IC_DICTIONARY
     override val emptyText: CharSequence
@@ -25,8 +26,8 @@ class DictionariesFragment : BaseListFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val app = requireActivity().application as AriApplication
-        listAdapter = DictionaryListAdapter(app.dictionaries, activity)
-        setListAdapter(listAdapter)
+        listAdapter = DictionaryListAdapter(app.dictionaries, requireActivity())
+        listView.adapter = listAdapter
     }
 
     override fun onCreateView(
@@ -52,16 +53,16 @@ class DictionariesFragment : BaseListFragment() {
         return result
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.dictionaries, menu)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
+    override fun onPrepareMenu(menu: Menu) {
         val miAddDictionaries = menu.findItem(R.id.action_add_dictionaries)
         miAddDictionaries.icon = IconMaker.actionBar(activity, IconMaker.IC_ADD)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_add_dictionaries) {
             selectDictionaryFiles()
             return true

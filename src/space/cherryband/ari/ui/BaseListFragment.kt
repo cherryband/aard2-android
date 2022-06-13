@@ -3,23 +3,23 @@ package space.cherryband.ari.ui
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
-import android.widget.AbsListView.MultiChoiceModeListener
 import android.widget.ImageView
-import android.widget.ListView
 import android.widget.TextView
-import androidx.fragment.app.ListFragment
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.RecyclerView
 import space.cherryband.ari.R
 import space.cherryband.ari.util.IconMaker
 
-abstract class BaseListFragment : ListFragment() {
+abstract class BaseListFragment : Fragment() {
     protected lateinit var emptyView: View
+    protected lateinit var listView: RecyclerView
     var actionMode: ActionMode? = null
-
+    
     abstract val emptyIcon: Char
     abstract val emptyText: CharSequence?
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
         retainInstance = true
     }
 
@@ -28,7 +28,9 @@ abstract class BaseListFragment : ListFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        emptyView = inflater.inflate(R.layout.empty_view, container, false)
+        val view = inflater.inflate(R.layout.fragment_list, container, false)
+        listView = view.findViewById(R.id.base_list)
+        emptyView = view.findViewById(R.id.empty_view)
         emptyView.findViewById<TextView>(R.id.empty_text).apply {
             movementMethod = LinkMovementMethod.getInstance()
             text = emptyText
@@ -53,47 +55,31 @@ abstract class BaseListFragment : ListFragment() {
         return false
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        listView.emptyView = emptyView
-        (listView.parent as ViewGroup).addView(emptyView, 0)
-        listView.isStackFromBottom = true
-        if (supportsSelection) {
-            listView.itemsCanFocus = false
-            listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
-            listView.setMultiChoiceModeListener(object : MultiChoiceModeListener {
-                override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-                    actionMode = mode
-                    val inflater = mode.menuInflater
-                    inflater.inflate(selectionMenuId, menu)
-                    val miDelete = menu.findItem(R.id.blob_descriptor_delete)
-                    if (miDelete != null) {
-                        miDelete.icon = IconMaker.actionBar(activity, IconMaker.IC_TRASH)
-                    }
-                    val miSelectAll = menu.findItem(R.id.blob_descriptor_select_all)
-                    if (miSelectAll != null) {
-                        miSelectAll.icon = IconMaker.actionBar(activity, IconMaker.IC_SELECT_ALL)
-                    }
-                    setSelectionMode(true)
-                    return true
-                }
+    protected val actionModeCallback = object : ActionMode.Callback {
+        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+            actionMode = mode
+            val inflater = mode.menuInflater
+            inflater.inflate(selectionMenuId, menu)
+            val miDelete = menu.findItem(R.id.blob_descriptor_delete)
+            if (miDelete != null) {
+                miDelete.icon = IconMaker.actionBar(activity, IconMaker.IC_TRASH)
+            }
+            val miSelectAll = menu.findItem(R.id.blob_descriptor_select_all)
+            if (miSelectAll != null) {
+                miSelectAll.icon = IconMaker.actionBar(activity, IconMaker.IC_SELECT_ALL)
+            }
+            setSelectionMode(true)
+            return true
+        }
 
-                override fun onPrepareActionMode(mode: ActionMode, menu: Menu) = false
+        override fun onPrepareActionMode(mode: ActionMode, menu: Menu) = false
 
-                override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean
+        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean
                 = onSelectionActionItemClicked(mode, item)
 
-                override fun onDestroyActionMode(mode: ActionMode) {
-                    setSelectionMode(false)
-                    actionMode = null
-                }
-
-                override fun onItemCheckedStateChanged(
-                    mode: ActionMode,
-                    position: Int, id: Long, checked: Boolean
-                ) {
-                }
-            })
+        override fun onDestroyActionMode(mode: ActionMode) {
+            setSelectionMode(false)
+            actionMode = null
         }
     }
 }
