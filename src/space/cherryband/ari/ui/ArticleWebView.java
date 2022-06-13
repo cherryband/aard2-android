@@ -1,5 +1,6 @@
 package space.cherryband.ari.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -109,6 +111,7 @@ public class ArticleWebView extends SearchableWebView {
         this(context, null);
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     public ArticleWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -195,14 +198,8 @@ public class ArticleWebView extends SearchableWebView {
             }
 
             @Override
-            public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-                Uri parsed;
-                try {
-                    parsed = Uri.parse(url);
-                } catch (Exception e) {
-                    Log.d(TAG, "Failed to parse url: " + url, e);
-                    return super.shouldInterceptRequest(view, url);
-                }
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                Uri parsed = request.getUrl();
                 if (parsed.isRelative()) {
                     return null;
                 }
@@ -218,12 +215,12 @@ public class ArticleWebView extends SearchableWebView {
             }
 
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view,
-                                                    final String url) {
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Log.d(TAG, String.format("shouldOverrideUrlLoading: %s (current %s)",
-                        url, view.getUrl()));
+                        request.getUrl(), view.getUrl()));
 
-                Uri uri = Uri.parse(url);
+                Uri uri = request.getUrl();
+                String url = request.toString();
                 String scheme = uri.getScheme();
                 String host = uri.getHost();
 
