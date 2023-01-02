@@ -79,7 +79,7 @@ class LookupFragment : BaseListFragment(),
         inflater.inflate(R.menu.lookup, menu)
         val miFilter = menu.findItem(R.id.action_lookup)
         val filterActionView = miFilter.actionView
-        searchView = filterActionView.findViewById(R.id.fldLookup)
+        searchView = filterActionView?.findViewById(R.id.fldLookup)
         searchView?.apply {
             queryHint = miFilter.title
             setOnQueryTextListener(queryTextListener)
@@ -134,9 +134,9 @@ class LookupFragment : BaseListFragment(),
         super.onDestroy()
     }
 
-    override fun onLookupStarted(query: String) = setBusy(true)
-    override fun onLookupFinished(query: String) = setBusy(false)
-    override fun onLookupCanceled(query: String) = setBusy(false)
+    override fun onLookupStarted(query: String?) = setBusy(true)
+    override fun onLookupFinished(query: String?) = setBusy(false)
+    override fun onLookupCanceled(query: String?) = setBusy(false)
 
     companion object {
         private val TAG = LookupFragment::class.java.simpleName

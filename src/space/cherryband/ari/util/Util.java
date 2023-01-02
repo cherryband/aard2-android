@@ -48,13 +48,9 @@ public class Util {
         }
     }
 
-    public static boolean isBlank(String value) {
-        return value == null || value.trim().equals("");
-    }
-
     public static String wikipediaToSlobUri(Uri uri) {
         String host = uri.getHost();
-        if (isBlank(host)) {
+        if (host == null || host.trim().isEmpty()) {
             return null;
         }
         String normalizedHost = host;

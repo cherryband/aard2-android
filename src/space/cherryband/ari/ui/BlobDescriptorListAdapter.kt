@@ -22,13 +22,13 @@ class BlobDescriptorListAdapter(val list: BlobDescriptorList) : BaseAdapter() {
 
     override fun getCount(): Int = synchronized(list) { list.size }
 
-    override fun getItem(position: Int): Any = synchronized(list) { list[position] }
+    override fun getItem(position: Int): Any = synchronized(list) { list[position]!! }
 
     override fun getItemId(position: Int): Long = position.toLong()
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val item = list[position]
-        val timestamp = DateUtils.getRelativeTimeSpanString(item.createdAt)
+        val timestamp = DateUtils.getRelativeTimeSpanString(item!!.createdAt)
         val slob = list.resolveOwner(item)
         val view: View = if (convertView != null) {
             convertView

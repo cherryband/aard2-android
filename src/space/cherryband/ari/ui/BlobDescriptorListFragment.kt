@@ -10,8 +10,8 @@ import android.widget.AdapterView.OnItemClickListener
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import space.cherryband.ari.data.BlobDescriptorList
 import space.cherryband.ari.R
+import space.cherryband.ari.data.BlobDescriptorList
 import space.cherryband.ari.util.IconMaker
 
 internal abstract class BlobDescriptorListFragment : BaseListFragment() {
@@ -182,7 +182,7 @@ internal abstract class BlobDescriptorListFragment : BaseListFragment() {
         val list = descriptorList
         val itemId = mi.itemId
         if (itemId == R.id.action_sort_asc) {
-            list.setSort(!list.isAscending)
+            list.setSort(ascending = !list.isAscending)
             setAscending(mi, list.isAscending)
             return true
         }

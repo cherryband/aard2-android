@@ -176,13 +176,13 @@ class DictionaryListAdapter internal constructor(
         val copyright = desc.tags["copyright"]
         copyrightView.text = copyright
         copyrightRow.visibility =
-            if (Util.isBlank(copyright)) View.GONE else View.VISIBLE
+            if (copyright.isNullOrBlank()) View.GONE else View.VISIBLE
         copyrightRow.isEnabled = available
     }
 
     private fun setupSourceView(desc: SlobDescriptor, available: Boolean, view: View) {
         val source = desc.tags["source"]
-        val visibility = if (Util.isBlank(source)) View.GONE else View.VISIBLE
+        val visibility = if (source.isNullOrBlank()) View.GONE else View.VISIBLE
         val sourceHtml: CharSequence = Html.fromHtml(String.format(hrefTemplate, source, source))
 
         val sourceRow: View = view.findViewById(R.id.dictionary_license_row)
@@ -203,8 +203,8 @@ class DictionaryListAdapter internal constructor(
         val licenseName = desc.tags["license.name"]
         val licenseUrl = desc.tags["license.url"]
         val license: CharSequence? = when {
-            Util.isBlank(licenseUrl) -> licenseName
-            Util.isBlank(licenseName) -> {
+            licenseUrl.isNullOrBlank() -> licenseName
+            licenseName.isNullOrBlank() -> {
                 Html.fromHtml(String.format(hrefTemplate, licenseUrl, licenseUrl))
             }
             else -> {
@@ -212,15 +212,15 @@ class DictionaryListAdapter internal constructor(
             }
         }
         val visibility =
-            if (licenseName.isNullOrEmpty() && licenseUrl.isNullOrEmpty()) View.GONE else View.VISIBLE
+            if (licenseName.isNullOrBlank() && licenseUrl.isNullOrBlank()) View.GONE else View.VISIBLE
 
         val licenseRow: View = view.findViewById(R.id.dictionary_license_row)
         val licenseIcon: ImageView = view.findViewById(R.id.dictionary_license_icon)
         val licenseView: TextView = view.findViewById(R.id.dictionary_license)
         licenseIcon.setImageDrawable(IconMaker.text(context, IconMaker.IC_LICENSE))
+        licenseIcon.visibility = visibility
         licenseView.text = license
         licenseView.tag = licenseUrl
-        licenseIcon.visibility = visibility
         licenseView.visibility = visibility
         licenseRow.visibility = visibility
         licenseRow.isEnabled = available

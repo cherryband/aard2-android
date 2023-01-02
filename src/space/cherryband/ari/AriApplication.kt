@@ -9,6 +9,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.database.DataSetObserver
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
@@ -46,7 +47,6 @@ class AriApplication : Application() {
     lateinit var history: BlobDescriptorList
     var lookupQuery = ""
         private set
-
     
     private var port = -1
     private lateinit var bookmarkStore: DescriptorStore<BlobDescriptor>
@@ -175,7 +175,7 @@ class AriApplication : Application() {
 
     fun prefs(): SharedPreferences = getDefaultSharedPreferences(this)
 
-    val preferredTheme: String?
+    val preferredTheme
         get() = prefs().getString(PREF_UI_THEME, PREF_UI_THEME_SYSTEM)
 
     fun installTheme(activity: AppCompatActivity) {
@@ -305,7 +305,7 @@ class AriApplication : Application() {
             currentLookupTask = null
         }
         notifyLookupStarted(query)
-        if (query.isNullOrEmpty()) {
+        if (query.isNullOrBlank()) {
             setLookupResult("", Collections.emptyIterator())
             notifyLookupFinished(query)
             return
@@ -333,7 +333,6 @@ class AriApplication : Application() {
 
     private val lookupListeners: MutableList<LookupListener> = ArrayList()
     fun addLookupListener(listener: LookupListener) = lookupListeners.add(listener)
-
     fun removeLookupListener(listener: LookupListener) = lookupListeners.remove(listener)
 
     internal class FileTooBigException : IOException()
@@ -354,10 +353,18 @@ class AriApplication : Application() {
         var t0 = System.currentTimeMillis()
         try {
             val pm = packageManager
-            val p = pm.getPackageInfo(
-                packageName,
-                PackageManager.GET_ACTIVITIES or PackageManager.MATCH_DISABLED_COMPONENTS
-            )
+            val pmFlags = PackageManager.GET_ACTIVITIES or PackageManager.MATCH_DISABLED_COMPONENTS
+            val p = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                pm.getPackageInfo(
+                    packageName,
+                    PackageManager.PackageInfoFlags.of(pmFlags.toLong())
+                )
+            } else {
+                pm.getPackageInfo(
+                    packageName,
+                    pmFlags
+                )
+            }
             Log.d(
                 TAG,
                 "Done getting available activities in " + (System.currentTimeMillis() - t0)

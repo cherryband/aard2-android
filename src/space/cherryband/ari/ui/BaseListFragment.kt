@@ -46,8 +46,8 @@ abstract class BaseListFragment : ListFragment() {
     protected open val supportsSelection = true
 
     fun finishActionMode(): Boolean {
-        if (actionMode != null) {
-            actionMode!!.finish()
+        actionMode?.apply {
+            finish()
             return true
         }
         return false
@@ -57,7 +57,6 @@ abstract class BaseListFragment : ListFragment() {
         super.onViewCreated(view, savedInstanceState)
         listView.emptyView = emptyView
         (listView.parent as ViewGroup).addView(emptyView, 0)
-        listView.isStackFromBottom = true
         if (supportsSelection) {
             listView.itemsCanFocus = false
             listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
@@ -91,8 +90,7 @@ abstract class BaseListFragment : ListFragment() {
                 override fun onItemCheckedStateChanged(
                     mode: ActionMode,
                     position: Int, id: Long, checked: Boolean
-                ) {
-                }
+                ) {}
             })
         }
     }

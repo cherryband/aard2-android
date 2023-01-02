@@ -149,10 +149,10 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
         val result: Iterator<Slob.Blob> = app.find(bd.key, bd.slobId)
         val data = BlobListAdapter(this, 20, 1)
         data.setData(result)
-        val hasFragment = !Util.isBlank(bd.fragment)
+        val fragment = bd.fragment
         return ArticleCollectionPagerAdapter(
             app, data,
-            if (hasFragment) toBlobWithFragment(bd.fragment) else blobToBlob,
+            if (!fragment.isNullOrBlank()) toBlobWithFragment(fragment) else blobToBlob,
             supportFragmentManager
         )
     }
@@ -170,7 +170,7 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
         return ArticleCollectionPagerAdapter(
             app,
             BlobDescriptorListAdapter(app.bookmarks),
-            { item: Any? -> app.bookmarks.resolve(item as BlobDescriptor?) },
+            { item: Any? -> app.bookmarks.resolve(item as BlobDescriptor) },
             supportFragmentManager
         )
     }
@@ -179,7 +179,7 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
         return ArticleCollectionPagerAdapter(
             app,
             BlobDescriptorListAdapter(app.history),
-            { item: Any? -> app.history.resolve(item as BlobDescriptor?) },
+            { item: Any? -> app.history.resolve(item as BlobDescriptor) },
             supportFragmentManager
         )
     }
@@ -221,7 +221,7 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
             }
         }
         val data = BlobListAdapter(this, 20, 1)
-        if (lookupKey == null || lookupKey.isEmpty()) {
+        if (lookupKey.isNullOrBlank()) {
             val msg = getString(R.string.article_collection_nothing_to_lookup)
             throw RuntimeException(msg)
         } else {

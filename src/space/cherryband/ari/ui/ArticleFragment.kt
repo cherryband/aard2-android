@@ -18,18 +18,14 @@ import space.cherryband.ari.util.IconMaker
 class ArticleFragment : Fragment() {
     var webView: ArticleWebView? = null
         private set
-    private var miBookmark: MenuItem? = null
-    private var miFullscreen: MenuItem? = null
-    private var icBookmark: Drawable? = null
-    private var icBookmarkO: Drawable? = null
-    private var icFullscreen: Drawable? = null
+    private lateinit var miBookmark: MenuItem
+    private lateinit var miFullscreen: MenuItem
+    private val icBookmark: Drawable by lazy { IconMaker.actionBar(activity, IconMaker.IC_BOOKMARK) }
+    private val icBookmarkO: Drawable by lazy { IconMaker.actionBar(activity, IconMaker.IC_BOOKMARK_O) }
+    private val icFullscreen: Drawable by lazy { IconMaker.actionBar(activity, IconMaker.IC_FULLSCREEN) }
     private var url: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val activity: Activity? = activity
-        icBookmark = IconMaker.actionBar(activity, IconMaker.IC_BOOKMARK)
-        icBookmarkO = IconMaker.actionBar(activity, IconMaker.IC_BOOKMARK_O)
-        icFullscreen = IconMaker.actionBar(activity, IconMaker.IC_FULLSCREEN)
         setHasOptionsMenu(true)
     }
 
@@ -47,22 +43,16 @@ class ArticleFragment : Fragment() {
     }
 
     private fun displayBookmarked(value: Boolean) {
-        if (miBookmark == null) {
-            return
-        }
-        if (value) {
-            miBookmark!!.isChecked = true
-            miBookmark!!.icon = icBookmark
-        } else {
-            miBookmark!!.isChecked = false
-            miBookmark!!.icon = icBookmarkO
+        miBookmark.apply {
+            isChecked = value
+            icon = if (value) icBookmark else icBookmarkO
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_find_in_page -> {
-                webView?.showFindDialog(null, true)
+                webView?.showFind(null, true)
                 true
             }
             R.id.action_bookmark_article -> {
@@ -95,8 +85,10 @@ class ArticleFragment : Fragment() {
                 true
             }
             R.id.action_load_remote_content -> {
-                webView?.forceLoadRemoteContent = true
-                webView?.reload()
+                webView?.apply {
+                    forceLoadRemoteContent = true
+                    reload()
+                }
                 true
             }
             R.id.action_select_style -> {
@@ -124,20 +116,22 @@ class ArticleFragment : Fragment() {
     ): View? {
         val args = arguments
         url = args?.getString(ARG_URL)
+
         if (url == null) {
             val layout = inflater.inflate(R.layout.empty_view, container, false)
-            val textView:TextView = layout.findViewById(R.id.empty_text)
+            val textView: TextView = layout.findViewById(R.id.empty_text)
             textView.text = ""
             val icon: ImageView = layout.findViewById(R.id.empty_icon)
             icon.setImageDrawable(IconMaker.emptyView(activity, IconMaker.IC_BAN))
             setHasOptionsMenu(false)
             return layout
         }
+
         val layout = inflater.inflate(R.layout.article_view, container, false)
         val progressBar: ProgressBar = layout.findViewById(R.id.webViewPogress)
+
         webView = layout.findViewById<ArticleWebView>(R.id.webView).apply {
-            restoreState(savedInstanceState!!)
-            loadUrl(url!!)
+            savedInstanceState?.let { restoreState(it) }
             webChromeClient = object : WebChromeClient() {
                 override fun onProgressChanged(view: WebView, newProgress: Int) {
                     val activity: Activity? = activity
@@ -153,6 +147,11 @@ class ArticleFragment : Fragment() {
         return layout
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        url?.let{ webView?.loadUrl(it) }
+    }
     override fun onResume() {
         super.onResume()
         applyTextZoomPref()
@@ -162,19 +161,19 @@ class ArticleFragment : Fragment() {
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
         if (url == null) {
-            miBookmark?.isVisible = false
+            miBookmark.isVisible = false
         } else {
             val app = getApp(activity)
             try {
                 val bookmarked = app.isBookmarked(url)
                 displayBookmarked(bookmarked)
             } catch (ex: Exception) {
-                miBookmark?.isVisible = false
+                miBookmark.isVisible = false
             }
         }
         applyTextZoomPref()
         applyStylePref()
-        miFullscreen?.icon = icFullscreen
+        miFullscreen.icon = icFullscreen
     }
 
     fun applyTextZoomPref() {
@@ -188,8 +187,6 @@ class ArticleFragment : Fragment() {
     override fun onDestroy() {
         webView?.destroy()
         webView = null
-        miFullscreen = null
-        miBookmark = null
         super.onDestroy()
     }
 

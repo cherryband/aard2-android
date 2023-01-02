@@ -1,6 +1,6 @@
 package space.cherryband.ari.ui;
 
-/**
+/*
  * From http://www.marvinlabs.com/2010/10/29/custom-listview-ability-check-items/
  */
 
