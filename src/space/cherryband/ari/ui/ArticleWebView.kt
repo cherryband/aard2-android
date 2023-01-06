@@ -16,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity
 import space.cherryband.ari.AriApplication
 import space.cherryband.ari.R
 import space.cherryband.ari.data.BlobDescriptor
-import space.cherryband.ari.util.Util
 import java.io.ByteArrayInputStream
 import java.util.*
 
@@ -43,7 +42,6 @@ class ArticleWebView @SuppressLint("SetJavaScriptEnabled") constructor(
     private val timer: Timer
     private val applyStylePref: TimerTask
     var forceLoadRemoteContent = false
-    val TAG: String = ArticleWebView::class.simpleName.orEmpty()
 
     @JavascriptInterface
     fun setStyleTitles(titles: Array<String?>) {
@@ -243,7 +241,7 @@ class ArticleWebView @SuppressLint("SetJavaScriptEnabled") constructor(
             )
             val data = prefs.all
             val names: MutableList<String> = ArrayList(data.keys)
-            Util.sort(names)
+            names.sort()
             names.addAll(styleTitles)
             names.add(defaultStyleTitle)
             names.add(autoStyleTitle)
@@ -489,5 +487,6 @@ class ArticleWebView @SuppressLint("SetJavaScriptEnabled") constructor(
         const val PREF_REMOTE_CONTENT_ALWAYS = "always"
         const val PREF_REMOTE_CONTENT_WIFI = "wifi"
         const val PREF_REMOTE_CONTENT_NEVER = "never"
+        val TAG: String? = ArticleWebView::class.simpleName
     }
 }

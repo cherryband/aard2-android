@@ -1,32 +1,15 @@
-package space.cherryband.ari.util;
+package space.cherryband.ari.util
 
-import android.net.Uri;
-import android.util.Log;
+import android.net.Uri
+import android.util.Log
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+object Util {
+    val TAG = Util::class.java.simpleName
 
-public class Util {
-
-    public static final String TAG = Util.class.getSimpleName();
-
-    public static int compare(long l1, long l2) {
-        return Long.compare(l1, l2);
-    }
-
-    public static <T extends Comparable<? super T>> void sort(List<T> list) {
+    fun <T> MutableList<T>.safeSort(comparator: Comparator<in T>?) {
         try {
-            Collections.sort(list);
-        } catch (Exception e) {
-            Log.w(TAG, "Error while sorting:", e);
-        }
-    }
-
-    public static <T> void sort(List<T> list, Comparator<? super T> comparator) {
-        try {
-            list.sort(comparator);
-        } catch (Exception e) {
+            comparator?.let { sortWith(it) }
+        } catch (e: Exception) {
             //From http://www.oracle.com/technetwork/java/javase/compatibility-417013.html#source
             /*
             Synopsis: Updated sort behavior for Arrays and Collections may throw an IllegalArgumentException
@@ -43,23 +26,23 @@ public class Util {
             //it's hard to be sure that collation key comparisons won't trigger an exception. It certainly
             //does at least for some keys in ICU 53.1.
             //Incorrect or no sorting seems preferable than a crashing app.
+            //Note: Kotlin sortWith(Comparator) function is implemented using java.util.Arrays.sort.
             //TODO perhaps java.util.Collections.sort shouldn't be used at all
-            Log.w(TAG, "Error while sorting:", e);
+            Log.w(TAG, "Error while sorting:", e)
         }
     }
 
-    public static String wikipediaToSlobUri(Uri uri) {
-        String host = uri.getHost();
-        if (host == null || host.trim().isEmpty()) {
-            return null;
+    fun wikipediaToSlobUri(uri: Uri): String? {
+        val host = uri.host
+        if (host == null || host.trim { it <= ' ' }.isEmpty()) {
+            return null
         }
-        String normalizedHost = host;
-        String[] parts = host.split("\\.");
+        var normalizedHost: String = host
+        val parts = host.split('.').toTypedArray()
         //if mobile host like en.m.wikipedia.opr get rid of m
-        if (parts.length == 4) {
-            normalizedHost = String.format("%s.%s.%s", parts[0], parts[2], parts[3]);
+        if (parts.size == 4) {
+            normalizedHost = String.format("%s.%s.%s", parts[0], parts[2], parts[3])
         }
-        return "http://" + normalizedHost;
+        return "http://$normalizedHost"
     }
-
 }

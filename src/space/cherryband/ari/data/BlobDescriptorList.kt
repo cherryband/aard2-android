@@ -12,7 +12,7 @@ import com.ibm.icu.text.StringSearch
 import itkach.slob.Slob
 import itkach.slob.Slob.KeyComparator
 import space.cherryband.ari.AriApplication
-import space.cherryband.ari.util.Util
+import space.cherryband.ari.util.Util.safeSort
 import java.text.StringCharacterIterator
 import java.util.*
 
@@ -28,10 +28,10 @@ class BlobDescriptorList @JvmOverloads constructor(
 
     private val list: MutableList<BlobDescriptor?> = ArrayList()
     private val filteredList: MutableList<BlobDescriptor?> = ArrayList()
-    public var filter: String? = ""
+    var filter: String? = ""
         set (value) {
-            notifyDataSetChanged()
             field = value
+            notifyDataSetChanged()
         }
 
     var sortOrder: SortOrder = SortOrder.TIME
@@ -44,10 +44,10 @@ class BlobDescriptorList @JvmOverloads constructor(
     = Comparator { b1, b2 -> keyComparator.compare(b1!!.key, b2!!.key) }
     private val nameComparatorDesc: Comparator<BlobDescriptor?> = Collections.reverseOrder(nameComparatorAsc)
     private val timeComparatorAsc: Comparator<BlobDescriptor?>
-    = Comparator { b1, b2 -> Util.compare(b1!!.createdAt, b2!!.createdAt) }
+    = Comparator { b1, b2 -> b1!!.createdAt compareTo b2!!.createdAt }
     private val timeComparatorDesc: Comparator<BlobDescriptor?> = Collections.reverseOrder(timeComparatorAsc)
     private val lastAccessComparator: Comparator<BlobDescriptor?>
-    = Comparator { b1, b2 -> Util.compare(b2!!.lastAccess, b1!!.lastAccess) }
+    = Comparator { b1, b2 -> b2!!.lastAccess compareTo b1!!.lastAccess }
     private val keyComparator: KeyComparator = Slob.Strength.QUATERNARY.comparator
     private val handler: Handler = Handler(Looper.getMainLooper())
 
@@ -88,7 +88,7 @@ class BlobDescriptorList @JvmOverloads constructor(
     }
 
     private fun sortOrderChanged() {
-        Util.sort(filteredList, comparator)
+        filteredList.safeSort(comparator)
         dataSetObservable.notifyChanged()
     }
 
@@ -97,7 +97,7 @@ class BlobDescriptorList @JvmOverloads constructor(
      * valid or available. Once invoked this adapter is no longer valid and
      * should not report further data set changes.
      */
-    fun notifyDataSetInvalidated() = dataSetObservable::notifyInvalidated
+    fun notifyDataSetInvalidated() = dataSetObservable.notifyInvalidated()
 
     fun load() {
         list.addAll(store.load(BlobDescriptor::class.java))
@@ -186,7 +186,7 @@ class BlobDescriptorList @JvmOverloads constructor(
         list.add(bd)
         store.save(bd!!)
         if (list.size > maxSize) {
-            Util.sort(list, lastAccessComparator)
+            list.safeSort(lastAccessComparator)
             val lru = list.removeAt(list.size - 1)
             store.delete(lru!!.id)
         }

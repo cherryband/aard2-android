@@ -2,7 +2,7 @@ package space.cherryband.ari.data
 
 import itkach.slob.Slob
 import space.cherryband.ari.AriApplication
-import space.cherryband.ari.util.Util
+import space.cherryband.ari.util.Util.safeSort
 
 class SlobDescriptorList(
     private val app: AriApplication,
@@ -14,7 +14,7 @@ class SlobDescriptorList(
         //Dictionaries that are unfavorited
         //go immediately after favorites
         if (d1.priority == 0L && d2.priority == 0L) {
-            return@Comparator Util.compare(d2.lastAccess, d1.lastAccess)
+            return@Comparator d2.lastAccess compareTo d1.lastAccess
         }
         //Favorites are always above other
         if (d1.priority == 0L && d2.priority > 0) {
@@ -23,7 +23,7 @@ class SlobDescriptorList(
         if (d1.priority > 0 && d2.priority == 0L) {
             return@Comparator -1
         }
-        Util.compare(d1.priority, d2.priority)
+        d1.priority compareTo d2.priority
     }
 
     fun resolve(sd: SlobDescriptor): Slob? {
@@ -31,7 +31,7 @@ class SlobDescriptorList(
     }
 
     fun sort() {
-        Util.sort(this, comparator)
+        safeSort(comparator)
     }
 
     override fun load() {
