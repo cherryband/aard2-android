@@ -18,7 +18,8 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationBarView
-import space.cherryband.ari.*
+import space.cherryband.ari.AriApplication
+import space.cherryband.ari.R
 import space.cherryband.ari.data.BlobDescriptorList
 import space.cherryband.ari.util.Clipboard
 import space.cherryband.ari.util.IconMaker
@@ -53,7 +54,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         prepNavBar()
 
         app.prefs()
-            .registerOnSharedPreferenceChangeListener { _, key: String ->
+            .registerOnSharedPreferenceChangeListener { _, key: String? ->
                 if (key == AriApplication.PREF_UI_THEME) {
                     recreate()
                 }

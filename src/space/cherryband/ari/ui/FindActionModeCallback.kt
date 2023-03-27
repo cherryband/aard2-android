@@ -9,7 +9,11 @@ import android.text.Editable
 import android.text.Selection
 import android.text.Spannable
 import android.text.TextWatcher
-import android.view.*
+import android.view.ActionMode
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText

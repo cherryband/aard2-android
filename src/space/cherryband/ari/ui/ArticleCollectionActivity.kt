@@ -28,7 +28,8 @@ import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import itkach.slob.Slob
 import itkach.slob.Slob.PeekableIterator
-import space.cherryband.ari.*
+import space.cherryband.ari.AriApplication
+import space.cherryband.ari.R
 import space.cherryband.ari.data.BlobDescriptor
 import space.cherryband.ari.util.Util
 
@@ -274,7 +275,7 @@ class ArticleCollectionActivity : AppCompatActivity(), OnSystemUiVisibilityChang
         actionBar!!.subtitle = pageTitle
     }
 
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (key == PREF_FULLSCREEN) {
             applyFullScreenPref()
         }

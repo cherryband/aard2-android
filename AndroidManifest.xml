@@ -18,7 +18,7 @@
             android:name=".ui.MainActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout"
             android:exported="true"
-            android:windowSoftInputMode="stateHidden"android:exported="true"
+            android:windowSoftInputMode="stateHidden"
         >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,8 +31,8 @@
             android:name=".ui.ArticleCollectionActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout"
             android:excludeFromRecents="true"
+            android:taskAffinity=""
             android:exported="true"
-            android:taskAffinity=""android:exported="true"
         >
             <intent-filter>
                 <action android:name="aard2.lookup" />
@@ -67,7 +67,7 @@
             android:name="zh.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -97,7 +97,7 @@
             android:name="zh.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -127,7 +127,7 @@
             android:name="uk.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -157,7 +157,7 @@
             android:name="uk.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -187,7 +187,7 @@
             android:name="ru.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -217,7 +217,7 @@
             android:name="ru.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -247,7 +247,7 @@
             android:name="pt.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -277,7 +277,7 @@
             android:name="pt.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -307,7 +307,7 @@
             android:name="pl.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -337,7 +337,7 @@
             android:name="pl.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -367,7 +367,7 @@
             android:name="nl.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -397,7 +397,7 @@
             android:name="nl.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -427,7 +427,7 @@
             android:name="ja.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -457,7 +457,7 @@
             android:name="ja.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -487,7 +487,7 @@
             android:name="it.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -517,7 +517,7 @@
             android:name="it.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -547,7 +547,7 @@
             android:name="fr.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -577,7 +577,7 @@
             android:name="fr.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -607,7 +607,7 @@
             android:name="fa.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -637,7 +637,7 @@
             android:name="fa.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -667,7 +667,7 @@
             android:name="es.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -697,7 +697,7 @@
             android:name="es.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -727,7 +727,7 @@
             android:name="en.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -757,7 +757,7 @@
             android:name="en.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -787,7 +787,7 @@
             android:name="de.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -817,7 +817,7 @@
             android:name="de.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -847,7 +847,7 @@
             android:name="ar.wiktionary.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -877,7 +877,7 @@
             android:name="ar.wikipedia.org"
             android:enabled="false"
             android:exported="true"
-            android:targetActivity=".ui.ArticleCollectionActivity"android:exported="true"
+            android:targetActivity=".ui.ArticleCollectionActivity"
     >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
