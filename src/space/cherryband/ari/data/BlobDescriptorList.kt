@@ -223,11 +223,19 @@ class BlobDescriptorList @JvmOverloads constructor(
     }
 
     operator fun contains(contentUrl: String?): Boolean {
-        val bd = createDescriptor(contentUrl)
-        val index = list.indexOf(bd)
-        val result = index > -1
-        Log.d(TAG, "Is bookmarked?$result")
-        return result
+        val toFind = createDescriptor(contentUrl)
+        for (bd in list) {
+            if (bd!!.equals(toFind)) {
+                Log.d(TAG, "Found exact match, bookmarked")
+                return true
+            }
+            if (bd.key.equals(toFind!!.key) && bd.slobUri.equals(toFind.slobUri)) {
+                Log.d(TAG, "Found approximate match, bookmarked")
+                return true
+            }
+        }
+        Log.d(TAG, "not bookmarked")
+        return false
     }
 
     override fun get(index: Int): BlobDescriptor? = filteredList[index]

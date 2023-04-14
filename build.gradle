@@ -12,6 +12,8 @@ buildscript {
         classpath 'com.android.tools.build:gradle:7.4.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
+plugins {
+    id 'com.android.application' version '7.4.2'
 }
 
 apply plugin: 'com.android.application'
@@ -25,9 +27,6 @@ repositories {
     maven {
         url "https://jitpack.io"
     }
-    flatDir {
-        dirs 'libs'
-    }
 }
 
 android {
@@ -37,7 +36,7 @@ android {
         resources {
             excludes += ['META-INF/LICENSE', 'META-INF/NOTICE']
         }
-        project.file("exclude.txt").eachLine {
+        project("slobj").file("exclude.txt").eachLine {
             line ->
                 println line
                 if (line && line.trim() && !line.startsWith("#")) {
